@@ -6,7 +6,7 @@ import { getJSON } from "@/lib/loaders";
 export default function Home() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["homeData"],
-    queryFn: () => getJSON("http://localhost:3000"),
+    queryFn: () => getJSON("https://api.flowlet.ai"),
   });
 
   return (
