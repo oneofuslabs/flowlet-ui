@@ -1,14 +1,14 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 // Layouts
-import RootLayout from "./components/RootLayout";
+import RootLayout from "./components/root-layout";
 
 // Pages
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/protected-route";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { logOut, setToken, setUser } from "./utils/auth";
