@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
-
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getUser, logOut, setToken, setUser } from "@/utils/auth";
 import { getJSON, postJSON } from "@/utils/loaders";
-
+import { getBrowserClient } from "@/lib/supabase";
 type AuthContextType = {
   user: User | null;
   signOut: () => Promise<void>;
   signIn: (credentials: { email: string; password: string }) => Promise<any>;
   signUp: (credentials: { email: string; password: string }) => Promise<any>;
   fetchUser: () => Promise<User>;
+  requestPasswordReset: (email: string) => Promise<any>;
+  updatePassword: (password: string) => Promise<any>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return user;
   };
 
+  const requestPasswordReset = async (email: string) =>
+    await getBrowserClient().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+  const updatePassword = async (password: string) =>
+    await getBrowserClient().auth.updateUser({ password });
+
   return (
     <AuthContext.Provider
       value={{
@@ -56,6 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         fetchUser,
+        requestPasswordReset,
+        updatePassword,
       }}
     >
       {children}

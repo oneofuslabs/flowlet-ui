@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { ErrorResponse, useNavigate } from "react-router-dom";
+import { ErrorResponse, useNavigate, Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -134,9 +134,16 @@ export default function Login() {
                         />
                       </FormControl>
                       <FormMessage />
+                      <Link
+                        to="/forgot-password"
+                        className="text-sm text-gray-600 hover:text-gray-800 relative t-[-10px]"
+                      >
+                        Forgot password?
+                      </Link>
                     </FormItem>
                   )}
                 />
+
                 <Button
                   type="submit"
                   className="w-full"

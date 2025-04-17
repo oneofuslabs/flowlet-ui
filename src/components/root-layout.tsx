@@ -12,8 +12,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useTitle } from "@/context/title.context";
 
 export default function RootLayout() {
+  const { title } = useTitle();
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -25,8 +27,8 @@ export default function RootLayout() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
+                  <BreadcrumbLink className="text-3xl text-foreground font-medium">
+                    {title}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
               </BreadcrumbList>

@@ -4,8 +4,6 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import RootLayout from "./components/root-layout";
 
 // Pages
-import Home from "./pages/Home";
-import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/protected-route";
@@ -15,8 +13,13 @@ import { logOut, setToken, setUser } from "./utils/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAuth } from "./context/auth.context";
+import { ForgotPassword, ResetPassword } from "./pages/ForgotPassword";
 
-const Verification = () => {
+const Verification = ({
+  resetPassword = false,
+}: {
+  resetPassword?: boolean;
+}) => {
   const { hash } = useLocation();
   const { fetchUser } = useAuth();
   const navigate = useNavigate();
@@ -29,9 +32,11 @@ const Verification = () => {
         setToken(accessToken);
         const user = await fetchUser();
         setUser(user);
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
+        if (!resetPassword) {
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+        }
       }
     },
   });
@@ -39,6 +44,10 @@ const Verification = () => {
   useEffect(() => {
     verificationMutation.mutate();
   }, []);
+
+  if (resetPassword) {
+    return <ResetPassword />;
+  }
 
   return <div>Verifying...</div>;
 };
@@ -55,6 +64,8 @@ export function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/verification" element={<Verification />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<Verification resetPassword />} />
       <Route
         path="/"
         element={
@@ -63,9 +74,7 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Home />} />
-        <Route path="about" element={<About />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route index element={<Dashboard />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
