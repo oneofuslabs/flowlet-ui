@@ -1,37 +1,42 @@
 import { Outlet } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 export default function RootLayout() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-slate-100 border-b py-4">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold">
-            My App
-          </Link>
-          <nav className="flex gap-6">
-            <Link to="/" className="hover:underline">
-              Home
-            </Link>
-            <Link to="/about" className="hover:underline">
-              About
-            </Link>
-            <Link to="/dashboard" className="hover:underline">
-              Dashboard
-            </Link>
-          </nav>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    Building Your Application
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <Outlet />
         </div>
-      </header>
-
-      <main className="flex-1">
-        <Outlet />
-      </main>
-
-      <footer className="bg-slate-100 border-t py-4">
-        <div className="container mx-auto px-4 text-center text-sm text-slate-600">
-          &copy; {new Date().getFullYear()} My App. All rights reserved.
-        </div>
-      </footer>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

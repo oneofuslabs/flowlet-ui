@@ -1,3 +1,6 @@
+import { logOut, getToken } from "./auth";
+
+const apiUrl = import.meta.env.VITE_API_URL;
 const keyValueToParamString = ({
   key,
   value,
@@ -29,7 +32,7 @@ const defaultContentTypeHeaders = {
 };
 
 const authorizationHeaders = () => ({
-  authorization: `Bearer 123`,
+  authorization: `Bearer ${getToken()}`,
 });
 
 const getHeaders = (headers: Record<string, string> = {}) => ({
@@ -38,24 +41,44 @@ const getHeaders = (headers: Record<string, string> = {}) => ({
   ...headers,
 });
 
-const handleResponse = (res: Response) =>
-  res.ok
-    ? res.json()
-    : res.json().then((responseBody: Record<string, unknown>) =>
-        Promise.reject({
-          url: res.url,
-          error: responseBody?.error || responseBody?.Message,
-          status: res.status,
-          statusText: res.statusText,
-        })
-      );
+export type ErrorResponse = {
+  url: string;
+  error: string;
+  status: number;
+  statusText: string;
+};
+
+const handleResponse = (res: Response) => {
+  const OK401 = [
+    `${apiUrl}/api/v1/auth/login`,
+    `${apiUrl}/api/v1/auth/register`,
+  ];
+
+  if (res.ok) {
+    return res.json();
+  } else {
+    // Check for 401 Unauthorized
+    if (res.status === 401 && !OK401.includes(res.url)) {
+      return logOut();
+    }
+    // Continue with existing error handling
+    return res.json().then((responseBody: Record<string, unknown>) =>
+      Promise.reject({
+        url: res.url,
+        error: responseBody?.error || responseBody?.Message,
+        status: res.status,
+        statusText: res.statusText,
+      })
+    );
+  }
+};
 
 export const postJSON = (
   url: string,
   body: Record<string, unknown>,
   headers: Record<string, string> = {}
 ) =>
-  fetch(url, {
+  fetch(`${apiUrl}${url}`, {
     method: "POST",
     headers: getHeaders(headers),
     body: JSON.stringify(body),
@@ -66,7 +89,7 @@ export const putJSON = (
   body: Record<string, unknown>,
   headers: Record<string, string> = {}
 ) =>
-  fetch(`${url}`, {
+  fetch(`${apiUrl}${url}`, {
     method: "PUT",
     headers: getHeaders(headers),
     body: JSON.stringify(body),
@@ -78,7 +101,7 @@ export const getJSON = (
   headers: Record<string, string> = {}
 ) => {
   const urlWithQueryParams = buildUrl(url, queryParams);
-  return fetch(`${urlWithQueryParams}`, {
+  return fetch(`${apiUrl}${urlWithQueryParams}`, {
     method: "GET",
     headers: getHeaders(headers),
   }).then(handleResponse);
@@ -90,7 +113,7 @@ export const deleteJSON = (
   headers: Record<string, string> = {}
 ) => {
   const urlWithQueryParams = buildUrl(url, queryParams);
-  return fetch(`${urlWithQueryParams}`, {
+  return fetch(`${apiUrl}${urlWithQueryParams}`, {
     method: "DELETE",
     headers: getHeaders(headers),
   }).then(handleResponse);

@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getJSON } from "@/lib/loaders";
+import { getJSON } from "@/utils/loaders";
 
 export default function Home() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["homeData"],
-    queryFn: () => getJSON("https://api.flowlet.ai"),
+    queryFn: () => getJSON("/"),
   });
 
   return (
