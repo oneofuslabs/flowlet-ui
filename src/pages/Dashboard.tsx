@@ -2,8 +2,10 @@ import { PageWrapper } from "@/components/page-wrapper";
 import { getJSON } from "@/utils/loaders";
 import { useQuery } from "@tanstack/react-query";
 import { CopilotKit } from "@copilotkit/react-core";
-import { CopilotChat } from "@copilotkit/react-ui";
+import { TshirtSalesChat } from "@/copilot/onboarding-chat/chat";
 import "@copilotkit/react-ui/styles.css";
+import { GlobalStateProvider } from "@/copilot/onboarding-chat/states/use-global-state";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const { data, isLoading, error } = useQuery({
@@ -11,19 +13,22 @@ export default function Dashboard() {
     queryFn: () => getJSON("/"),
   });
 
+  useEffect(() => {
+    console.log("stage__getContactInfo");
+  }, []);
+
   return (
     <PageWrapper title="Dashboard">
       <div className="container mx-auto px-4 py-8">
         <p className="mb-4">Welcome to your dashboard</p>
 
-        <CopilotKit publicApiKey={import.meta.env.VITE_COPILOT_PUBLIC_KEY}>
-          <CopilotChat
-            labels={{
-              title: "Copilot Chat",
-              initial: "How can I help you today?",
-            }}
-            instructions="The whole chat experience, zero hassle"
-          />
+        <CopilotKit
+          threadId="123"
+          publicApiKey={import.meta.env.VITE_COPILOT_PUBLIC_KEY}
+        >
+          <GlobalStateProvider>
+            <TshirtSalesChat />
+          </GlobalStateProvider>
         </CopilotKit>
 
         {isLoading && <p className="mb-4">Loading test data...</p>}

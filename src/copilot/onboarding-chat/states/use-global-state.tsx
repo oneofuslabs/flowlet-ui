@@ -35,7 +35,7 @@ export type Order = {
 
 interface GlobalState {
   stage: Stage;
-  setStage: React.Dispatch<React.SetStateAction<Stage>>;
+  setStage: (stage: Stage) => void;
   selectedTshirt: Tshirt | null;
   setSelectedTshirt: React.Dispatch<React.SetStateAction<Tshirt | null>>;
   contactInfo: ContactInfo | null;
@@ -88,7 +88,10 @@ export function GlobalStateProvider({ children }: { children: ReactNode }) {
     <GlobalStateContext.Provider
       value={{
         stage,
-        setStage,
+        setStage: (stage: Stage) => {
+          setStage(stage);
+          console.log("Stage set to:", stage);
+        },
         selectedTshirt,
         setSelectedTshirt,
         contactInfo,

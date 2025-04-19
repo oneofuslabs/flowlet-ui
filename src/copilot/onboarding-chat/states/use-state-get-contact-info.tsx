@@ -30,7 +30,6 @@ export interface UseGetContactInfoStateOptions {
 */
 export function useStageGetContactInfo() {
   const { setContactInfo, stage, setStage } = useGlobalState();
-
   // Conditionally add additional instructions for the agent's prompt.
   useCopilotAdditionalInstructions(
     {
@@ -59,7 +58,7 @@ export function useStageGetContactInfo() {
               respond?.("User has submitted their contact information.");
 
               // This move the state machine to the next stage, getPaymentInfo deterministically.
-              setStage("getPaymentInfo"); // Corrected stage name
+              setStage("buildTshirt");
             }}
           />
         );

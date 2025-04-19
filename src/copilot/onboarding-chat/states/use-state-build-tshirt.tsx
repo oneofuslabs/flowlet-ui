@@ -20,21 +20,43 @@ const tshirts = [
     id: 1,
     name: "T-Shirt blue",
     price: 10,
+    size: "M",
   },
   {
     id: 2,
     name: "T-Shirt red",
     price: 100,
+    size: "L",
   },
   {
     id: 3,
     name: "T-Shirt green",
     price: 80,
+    size: "M",
   },
   {
     id: 4,
     name: "T-Shirt yellow",
     price: 50,
+    size: "L",
+  },
+  {
+    id: 5,
+    name: "T-Shirt red",
+    price: 20,
+    size: "L",
+  },
+  {
+    id: 6,
+    name: "T-Shirt blue",
+    price: 20,
+    size: "S",
+  },
+  {
+    id: 7,
+    name: "T-Shirt red",
+    price: 30,
+    size: "L",
   },
 ];
 
@@ -45,7 +67,7 @@ export function useStageBuildTshirt() {
   useCopilotAdditionalInstructions(
     {
       instructions:
-        "CURRENT STATE: You are now helping the user select a tshirt. TO START, say 'Thank you for that information! What sort of tshirt would you like to see?'. If you have a tshirt in mind, give a reason why you recommend it and then call the 'showTshirt' action with the tshirt you have in mind or show multiple tshirts with the 'showMultipleTshirts' action. Never list the tshirts you have in mind, just show them. Do ",
+        "CURRENT STATE: You are now helping the user select a tshirt. TO START, say 'Thank you for that information! What sort of tshirt would you like to see?'. Do not call nextState, wait for the user to select a tshirt. Present the tshirts with showTshirt action and wait for the user to select a tshirt. Do not call nextState, wait for the user to select a tshirt.",
       available: stage === "buildTshirt" ? "enabled" : "disabled",
     },
     [stage]
@@ -78,10 +100,14 @@ export function useStageBuildTshirt() {
             { name: "id", type: "number" },
             { name: "name", type: "string" },
             { name: "price", type: "number" },
+            { name: "size", type: "string" },
           ],
         },
       ],
       renderAndWaitForResponse: ({ args, status, respond }) => {
+        console.log("args", args);
+        console.log("status", status);
+        console.log("respond", respond);
         const { tshirt } = args;
         return (
           <ShowTshirt
@@ -125,6 +151,7 @@ export function useStageBuildTshirt() {
           attributes: [
             { name: "id", type: "number" },
             { name: "name", type: "string" },
+            { name: "size", type: "string" },
             { name: "price", type: "number" },
           ],
         },
