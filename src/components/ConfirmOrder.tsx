@@ -9,7 +9,7 @@ import {
 import {
   Order,
   useGlobalState,
-} from "@/copilot/onboarding-chat/states/use-global-state";
+} from "@/copilot/poc-chat/states/use-global-state";
 
 interface ConfirmOrderProps {
   status: "complete" | "executing" | "inProgress";

@@ -118,3 +118,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.copilotKitInputContainer {
+  padding: 12px 0 !important;
+}

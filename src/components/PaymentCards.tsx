@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CardInfo } from "@/copilot/onboarding-chat/states/use-global-state";
+import { CardInfo } from "@/copilot/poc-chat/states/use-global-state";
 
 const formSchema = z.object({
   number: z

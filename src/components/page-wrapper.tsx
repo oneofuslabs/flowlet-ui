@@ -19,13 +19,7 @@ export const PageWrapper = ({
   }, [title, updateTitle]);
 
   return (
-    <div
-      className={cn(
-        "flex flex-col h-screen",
-        noPadding ? "" : "px-4",
-        className
-      )}
-    >
+    <div className={cn("flex flex-col ", noPadding ? "" : "px-4", className)}>
       {children}
     </div>
   );

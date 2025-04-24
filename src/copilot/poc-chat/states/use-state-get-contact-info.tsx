@@ -1,4 +1,4 @@
-import { useGlobalState } from "@/copilot/onboarding-chat/states/use-global-state";
+import { useGlobalState } from "@/copilot/poc-chat/states/use-global-state";
 import {
   useCopilotAction,
   useCopilotAdditionalInstructions,
