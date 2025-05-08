@@ -7,8 +7,9 @@ export type OnboardingStage =
   | "getFullName"
   | "createWallet"
   | "buyCrypto"
-  | "showWalletInfo"
-  | "approveBuyCrypto";
+  | "reviewBuyCrypto"
+  | "createRule"
+  | "reviewRule";
 
 export type CryptoCurrency = "ETH" | "BTC" | "SOL";
 export type CryptoCurrencyAmount = {

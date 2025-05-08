@@ -5,12 +5,13 @@ import { useEffect, useRef } from "react";
 import { MessageRole } from "@copilotkit/runtime-client-gql";
 import { TextMessage } from "@copilotkit/runtime-client-gql";
 import { CopilotChat } from "@copilotkit/react-ui";
-import { cn } from "@/lib/utils";
+
 import {
   useStageBuyCrypto,
   useStageCreateWallet,
 } from "./states/use-create-wallet";
-import { useStageShowWalletInfo } from "./states/use-create-wallet";
+import { useStageCreateRule } from "./states/use-create-rule";
+
 export const OnboardingChat = () => {
   const { appendMessage, isLoading } = useCopilotChat();
   const intitialMessage = useRef(false);
@@ -18,11 +19,12 @@ export const OnboardingChat = () => {
   // init stages
   useStageGetFullName();
   useStageCreateWallet();
-  useStageShowWalletInfo();
   useStageBuyCrypto();
+  useStageCreateRule();
 
   useEffect(() => {
     if (intitialMessage.current || isLoading) return;
+    intitialMessage.current = true;
 
     setTimeout(() => {
       appendMessage(
@@ -32,13 +34,12 @@ export const OnboardingChat = () => {
           role: MessageRole.Assistant,
         })
       );
-      intitialMessage.current = true;
     }, 500);
-  }, [intitialMessage, appendMessage, isLoading]);
+  }, []);
 
   return (
     <div className="flex flex-col h-[600px] w-full rounded-xl shadow-sm border border-neutral-200">
-      <div className={cn("flex-1 w-full rounded-xl overflow-y-auto")}>
+      <div className="flex-1 w-full rounded-xl overflow-y-auto">
         <CopilotChat className="h-full w-full" instructions={systemPrompt} />
       </div>
     </div>

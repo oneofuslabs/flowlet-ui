@@ -4,9 +4,9 @@ import {
   useCopilotAdditionalInstructions,
   useCopilotReadable,
 } from "@copilotkit/react-core";
-import { useGlobalOnboardingState } from "./use-global-state";
-import { WalletInfo } from "../components/wallet-info";
-import { BuyCrypto } from "../components/buy-crypto";
+import { CryptoCurrency, useGlobalOnboardingState } from "./use-global-state";
+// import { BuyCrypto } from "../components/buy-crypto";
+// import { WalletInfo } from "../components/wallet-info";
 const createWallet = async () => ({
   walletAddress: "0x4f3C6b6F54eA215D24C36d4f3B6D80D50E9fE6a8", // 32 bytes base58 encoded
   walletPrivateKey:
@@ -14,7 +14,8 @@ const createWallet = async () => ({
 });
 
 export function useStageCreateWallet() {
-  const { setWallet, stage, setStage, fullName } = useGlobalOnboardingState();
+  const { setWallet, wallet, stage, setStage, fullName } =
+    useGlobalOnboardingState();
 
   useCopilotReadable(
     {
@@ -24,11 +25,21 @@ export function useStageCreateWallet() {
     },
     [stage]
   );
+
+  useCopilotReadable(
+    {
+      description: "Wallet",
+      value: wallet,
+      available: wallet ? "enabled" : "disabled",
+    },
+    [wallet]
+  );
+
   // Conditionally add additional instructions for the agent's prompt.
   useCopilotAdditionalInstructions(
     {
       instructions:
-        "CURRENT STATE: You are now creating a wallet for the user. Confirm whether the user would like to create a wallet? while confirming, use the fullName that is provided in the response.",
+        "CURRENT STATE: You are now creating a wallet for the user. Confirm whether the user would like to create a wallet? while confirming, use the fullName that is provided in the response. Explain the user that the wallet is required to continue. There will be $5 usd in the wallet to start with. Do not ask for email or any other additional information. Just confirm if the user would like to create a wallet.",
       available: stage === "createWallet" ? "enabled" : "disabled",
     },
     [stage]
@@ -50,8 +61,8 @@ export function useStageCreateWallet() {
       handler: async (response) => {
         if (response.isUserWantsToCreateWallet) {
           const wallet = await createWallet();
+          setStage("buyCrypto");
           setWallet(wallet);
-          setStage("showWalletInfo");
         } else {
           setStage("getFullName");
         }
@@ -61,50 +72,6 @@ export function useStageCreateWallet() {
   );
 }
 
-export function useStageShowWalletInfo() {
-  const { wallet, stage, setStage } = useGlobalOnboardingState();
-
-  useCopilotAdditionalInstructions(
-    {
-      instructions:
-        "CURRENT STATE: You are now showing the wallet information to the user. Say 'Great! Here is your wallet information. Please save it in a safe place.' but do not print the keys as text, show them as the component from showWalletInfo action.",
-      available: stage === "showWalletInfo" ? "enabled" : "disabled",
-    },
-    [stage]
-  );
-
-  useCopilotReadable(
-    {
-      description: "Wallet Information",
-      value: wallet,
-      available: stage === "showWalletInfo" ? "enabled" : "disabled",
-    },
-    [stage]
-  );
-
-  useCopilotAction({
-    name: "showWalletInfo",
-    description:
-      "Show the wallet information to the user. Do not call this more than once. Make sure to run this action as soon as this stage starts.",
-    available: stage === "showWalletInfo" ? "enabled" : "disabled",
-    renderAndWaitForResponse: ({ respond }) => {
-      if (!wallet) return <div>Loading wallet information...</div>;
-
-      return (
-        <WalletInfo
-          onProceed={() => {
-            respond?.(
-              "The user has saved their wallet info - we are proceeding to the next step."
-            );
-            setStage("buyCrypto");
-          }}
-          wallet={wallet}
-        />
-      );
-    },
-  });
-}
-
 export function useStageBuyCrypto() {
   const { wallet, stage, setStage, buyAmount, setBuyAmount } =
     useGlobalOnboardingState();
@@ -112,36 +79,89 @@ export function useStageBuyCrypto() {
   useCopilotAdditionalInstructions(
     {
       instructions:
-        "CURRENT STATE: You are now helping them buy some crypto with the buyCrypto action. Let the user know that we gave them $5 usd to start with. Make sure to run the buyCrypto action as soon as you explain the situation.",
-      available: stage === "buyCrypto" ? "enabled" : "disabled",
+        "CURRENT STATE: You are now helping them buy some crypto with the buyCrypto action. Give a link to the wallet page at '/wallet' explaining they can review their wallet information.Tell the user we gifted them $5 in the newly created wallet. In a new paragraph tell them they can buy ETH, BTC or SOL with that $5. Make sure to use the amount that is provided in the response.  Make sure to use the currency that is provided in the response. wait for user to respond with an amount and currency.  Once you have all the information run the approveBuyCrypto action to get users approval to buy the crypto.",
+      available: stage === "buyCrypto" && !buyAmount ? "enabled" : "disabled",
     },
     [stage]
   );
 
-  useCopilotAction({
-    name: "buyCrypto",
-    description: "Buy crypto currency for the user.",
-    available: stage === "buyCrypto" ? "enabled" : "disabled",
-    renderAndWaitForResponse: ({ respond }) => {
-      if (!wallet) return <div>Loading wallet information...</div>;
-
-      return (
-        <BuyCrypto
-          onCancel={() => {
-            setStage("showWalletInfo");
-          }}
-          onConfirm={() => {
-            respond?.(
-              `Say 'Great! your order for ${buyAmount?.amount} USD worth of ${buyAmount?.currency} has been placed.'. this stage is finished. We are moving to the next one.`
-            );
-            setStage("approveBuyCrypto");
-          }}
-          onValueChange={(value) => {
-            setBuyAmount(value);
-          }}
-          buyAmount={buyAmount}
-        />
-      );
+  useCopilotAdditionalInstructions(
+    {
+      instructions:
+        "CURRENT STATE: You are now waiting for the user to approve the buy crypto action. preview the buyAmount (currency and amount in bold like: $10 worth of ETH not 10 ETH. We are buting crypto using usd.) and wait for the user to approve the buy crypto action and ask them whether they would like to buy the crypto.",
+      available: stage === "buyCrypto" && buyAmount ? "enabled" : "disabled",
     },
-  });
+    [stage]
+  );
+
+  useCopilotReadable(
+    {
+      description: "Wallet",
+      value: wallet,
+      available: wallet ? "enabled" : "disabled",
+    },
+    [wallet]
+  );
+
+  useCopilotReadable(
+    {
+      description: "Buy Amount",
+      value: buyAmount,
+      available: buyAmount ? "enabled" : "disabled",
+    },
+    [buyAmount]
+  );
+
+  useCopilotAction(
+    {
+      name: "buyCrypto",
+      description: "Help the user buy crypto currency.",
+      available: stage === "buyCrypto" && !buyAmount ? "enabled" : "disabled",
+      parameters: [
+        {
+          name: "amount",
+          type: "number",
+          description:
+            "The amount of crypto to buy. Make sure to use the amount that is provided in the response.",
+        },
+        {
+          name: "currency",
+          type: "string",
+          description:
+            "The currency to buy. Make sure to use the currency that is provided in the response.",
+        },
+      ],
+      handler: (response) => {
+        setBuyAmount({
+          amount: response.amount,
+          currency: response.currency as CryptoCurrency,
+        });
+      },
+    },
+    [stage]
+  );
+
+  useCopilotAction(
+    {
+      name: "reviewBuyCrypto",
+      description: "Wait for approval from the user to buy crypto.",
+      available: stage === "buyCrypto" && buyAmount ? "enabled" : "disabled",
+      parameters: [
+        {
+          name: "isUserWantsToBuyCrypto",
+          type: "boolean",
+          description: "Whether the user would like to buy the crypto.",
+        },
+      ],
+      handler: (response) => {
+        console.log("response", response);
+        if (response.isUserWantsToBuyCrypto) {
+          setStage("createRule");
+        } else {
+          setStage("getFullName");
+        }
+      },
+    },
+    [stage, buyAmount]
+  );
 }

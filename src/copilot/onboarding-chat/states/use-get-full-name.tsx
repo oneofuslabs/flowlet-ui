@@ -31,7 +31,6 @@ export function useStageGetFullName() {
         },
       ],
       handler: async (response) => {
-        console.log("Full name:", response);
         setFullName(response.fullName);
         setStage("createWallet");
       },
