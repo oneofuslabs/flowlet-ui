@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Copy } from "lucide-react";
+import { CryptoCurrencyAmount } from "../copilot/onboarding-chat/states/use-global-state";
 
 const handleCopy = async (text: string) => {
   try {
@@ -21,6 +22,7 @@ const handleCopy = async (text: string) => {
 const handleDownload = (wallet: {
   walletAddress: string;
   walletPrivateKey: string;
+  balance: CryptoCurrencyAmount[] | null;
 }) => {
   const element = document.createElement("a");
   const file = new Blob([JSON.stringify(wallet, null, 2)], {
@@ -32,22 +34,24 @@ const handleDownload = (wallet: {
   element.click();
   document.body.removeChild(element);
 };
+
 export const WalletInfo = ({
-  onProceed,
   wallet,
 }: {
-  onProceed: () => void;
-  wallet: { walletAddress: string; walletPrivateKey: string };
+  wallet: {
+    walletAddress: string;
+    walletPrivateKey: string;
+    balance: CryptoCurrencyAmount[] | null;
+  };
 }) => {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Your Wallet Information</CardTitle>
         <CardDescription className="text-base">
-          🔒 Important: Please save your wallet information securely. Your
-          private key grants complete access to your wallet - never share it
-          with anyone and store it in a safe place. Consider downloading the
-          wallet file and keeping it in an encrypted storage.
+          🔒 Important: Please save your wallet information securely. Never
+          share it with anyone and store it in a safe place. Consider
+          downloading the wallet file and keeping it in an encrypted storage.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -87,7 +91,7 @@ export const WalletInfo = ({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-end">
         <Button
           variant="outline"
           onClick={() => handleDownload(wallet)}
@@ -96,8 +100,31 @@ export const WalletInfo = ({
           <Download className="h-4 w-4" />
           Download Wallet
         </Button>
-        <Button onClick={onProceed}>I've Saved My Wallet Info - Proceed</Button>
       </CardFooter>
+    </Card>
+  );
+};
+
+export const WalletBalance = ({
+  balance,
+}: {
+  balance: CryptoCurrencyAmount[] | null;
+}) => {
+  return (
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>Your Wallet Balance</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {balance?.map((balance) => (
+            <div key={balance.currency}>
+              <span>{balance.currency}</span>
+              <span>{balance.amount}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
 };

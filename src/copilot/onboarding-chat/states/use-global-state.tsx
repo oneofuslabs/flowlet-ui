@@ -11,10 +11,15 @@ export type OnboardingStage =
   | "createRule"
   | "reviewRule";
 
-export type CryptoCurrency = "ETH" | "BTC" | "SOL";
+export type CryptoCurrency = "ETH" | "BTC" | "SOL" | "USDT";
 export type CryptoCurrencyAmount = {
   currency: CryptoCurrency;
   amount: number;
+};
+export type Wallet = {
+  walletAddress: string;
+  walletPrivateKey: string;
+  balance: CryptoCurrencyAmount[] | null;
 };
 
 export interface GlobalStateOnboardingState {
