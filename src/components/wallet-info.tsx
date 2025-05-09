@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import { Card, CardFooter } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   CardContent,
@@ -45,62 +45,69 @@ export const WalletInfo = ({
   };
 }) => {
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Your Wallet Information</CardTitle>
-        <CardDescription className="text-base">
-          🔒 Important: Please save your wallet information securely. Never
-          share it with anyone and store it in a safe place. Consider
-          downloading the wallet file and keeping it in an encrypted storage.
+    <Card className="w-full max-w-2xl mx-auto gap-1">
+      <CardHeader className="pb-1 gap-0">
+        <div className="flex items-center justify-between">
+          <CardTitle>Wallet Information</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleDownload(wallet)}
+            className="flex gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </Button>
+        </div>
+        <CardDescription className="text-sm">
+          🔒 Save this information securely and never share it with anyone.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Wallet Address</label>
-          <div className="flex gap-2">
-            <Input
-              readOnly
-              value={wallet.walletAddress}
-              className="font-mono"
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleCopy(wallet.walletAddress)}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Address
+            </label>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={wallet.walletAddress}
+                className="font-mono h-9"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => handleCopy(wallet.walletAddress)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Private Key</label>
-          <div className="flex gap-2">
-            <Input
-              readOnly
-              value={wallet.walletPrivateKey}
-              className="font-mono"
-              type="password"
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleCopy(wallet.walletPrivateKey)}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Private Key
+            </label>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={wallet.walletPrivateKey}
+                className="font-mono h-9"
+                type="password"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => handleCopy(wallet.walletPrivateKey)}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button
-          variant="outline"
-          onClick={() => handleDownload(wallet)}
-          className="flex gap-2"
-        >
-          <Download className="h-4 w-4" />
-          Download Wallet
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
@@ -111,19 +118,27 @@ export const WalletBalance = ({
   balance: CryptoCurrencyAmount[] | null;
 }) => {
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Your Wallet Balance</CardTitle>
+    <Card className="w-full max-w-[200px]  py-1 gap-1">
+      <CardHeader className="pb-1 pt-2">
+        <CardTitle className="text-base font-medium">
+          Your Wallet Balance
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {balance?.map((balance) => (
-            <div key={balance.currency}>
-              <span>{balance.currency}</span>
-              <span>{balance.amount}</span>
-            </div>
-          ))}
-        </div>
+      <CardContent className="pt-0">
+        {balance?.map((balance) => (
+          <div
+            key={balance.currency}
+            className="flex items-center justify-between py-1.5 border-b last:border-0 text-sm"
+          >
+            <span className="text-muted-foreground">{balance.currency}</span>
+            <span className="font-mono">{balance.amount}</span>
+          </div>
+        ))}
+        {(!balance || balance.length === 0) && (
+          <div className="text-center py-2 text-sm text-muted-foreground">
+            No balance to display
+          </div>
+        )}
       </CardContent>
     </Card>
   );

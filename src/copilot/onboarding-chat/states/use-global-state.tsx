@@ -1,6 +1,6 @@
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { createContext, useContext, useState, ReactNode } from "react";
-
+import { CryptoCurrencyAmount } from "@/types/core";
 export const GlobalStateContext = createContext(null);
 
 export type OnboardingStage =
@@ -10,17 +10,6 @@ export type OnboardingStage =
   | "reviewBuyCrypto"
   | "createRule"
   | "reviewRule";
-
-export type CryptoCurrency = "ETH" | "BTC" | "SOL" | "USDT";
-export type CryptoCurrencyAmount = {
-  currency: CryptoCurrency;
-  amount: number;
-};
-export type Wallet = {
-  walletAddress: string;
-  walletPrivateKey: string;
-  balance: CryptoCurrencyAmount[] | null;
-};
 
 export interface GlobalStateOnboardingState {
   stage: OnboardingStage;

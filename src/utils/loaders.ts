@@ -48,14 +48,17 @@ export type ErrorResponse = {
   statusText: string;
 };
 
-const handleResponse = (res: Response) => {
+const handleResponse = async (res: Response) => {
   const OK401 = [
     `${apiUrl}/api/v1/auth/login`,
     `${apiUrl}/api/v1/auth/register`,
   ];
 
+  const headers = Object.fromEntries(res.headers.entries());
+  console.log(headers);
+
   if (res.ok) {
-    return res.json();
+    return await res.json();
   } else {
     // Check for 401 Unauthorized
     if (res.status === 401 && !OK401.includes(res.url)) {

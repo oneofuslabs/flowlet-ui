@@ -4,41 +4,19 @@ import {
   useCopilotChat,
   useCopilotReadable,
 } from "@copilotkit/react-core";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { MessageRole } from "@copilotkit/runtime-client-gql";
 import { TextMessage } from "@copilotkit/runtime-client-gql";
 import { CopilotChat } from "@copilotkit/react-ui";
 import { getJSON } from "@/utils/loaders";
 import { useQuery } from "@tanstack/react-query";
-import { Wallet } from "../onboarding-chat/states/use-global-state";
 import { WalletBalance, WalletInfo } from "../../components/wallet-info";
+import { useAssistant } from "@/copilot/flowlet-assistant/context";
 
-export const DefaultChat = () => {
+export const FlowletAssistant = () => {
   const { appendMessage, isLoading } = useCopilotChat();
   const intitialMessage = useRef(false);
-  const [wallet] = useState<Wallet | null>({
-    walletAddress: "0x4f3C6b6F54eA215D24C36d4f3B6D80D50E9fE6a8",
-    walletPrivateKey:
-      "0x9b5e19fc2dd8f486b213768e245c70571e9bcb5b6c1ab38ea2f439d210b7262a",
-    balance: [
-      {
-        currency: "ETH",
-        amount: 2,
-      },
-      {
-        currency: "BTC",
-        amount: 0.1,
-      },
-      {
-        currency: "SOL",
-        amount: 2,
-      },
-      {
-        currency: "USDT",
-        amount: 5,
-      },
-    ],
-  });
+  const { wallet } = useAssistant();
 
   const {
     data,
@@ -56,39 +34,6 @@ export const DefaultChat = () => {
       available: "enabled",
     },
     [data]
-  );
-
-  useCopilotReadable(
-    {
-      description: "Wallet",
-      value: wallet,
-      available: "enabled",
-    },
-    [wallet]
-  );
-
-  useCopilotReadable(
-    {
-      description: "Wallet Balance",
-      value: wallet?.balance,
-      available: "enabled",
-    },
-    [wallet]
-  );
-
-  useCopilotReadable(
-    {
-      description:
-        "Exchange Rates representing the amount you can buy with 1 USDT",
-      value: {
-        USDT: 1,
-        ETH: 3,
-        BTC: 5,
-        SOL: 20,
-      },
-      available: "enabled",
-    },
-    [wallet]
   );
 
   useEffect(() => {
@@ -247,7 +192,7 @@ export const DefaultChat = () => {
   if (profileLoading || !data) return <div>Loading...</div>;
 
   return (
-    <div className="flex flex-col h-[600px] w-full rounded-xl shadow-sm border border-neutral-200">
+    <div className="flex flex-col h-[calc(100vh-150px)] w-full rounded-xl shadow-sm border border-neutral-200">
       <div className="flex-1 w-full rounded-xl overflow-y-auto">
         <CopilotChat className="h-full w-full" instructions={systemPrompt} />
       </div>
@@ -264,7 +209,7 @@ I'm your AI assistant for your web3 wallet. I can help you with the following op
 
 <b>Trading:</b> Trade crypto, create smart rules around trading, and set up recurring payments.
 
-<b>Showing User Information:</b> View your wallet balance, wallet address and private key, transaction history, and active rules.
+<b>Information:</b> View your wallet balance, wallet address and private key, transaction history, and active rules.
 
 Let me know how I can assist you today!
 ---
@@ -275,7 +220,7 @@ You are now here to help the user with crypto operations. These operations are a
   - Create smart rules around crypto trading
   - Create recurring payments
 
-2. SHOWING USER INFORMATION
+2. INFORMATION
   - Show user their wallet balance
   - Show user their wallet address and private key
   - Show user their transaction history
