@@ -12,6 +12,7 @@ import { WalletBalance, WalletInfo } from "../../components/wallet-info";
 import { useAssistant } from "@/copilot/flowlet-assistant/context";
 import { TransactionCard } from "@/components/transaction-card";
 import { RuleCard } from "@/components/rule-card";
+import { postJSON } from "@/utils/loaders";
 
 export const FlowletAssistant = () => {
   const { appendMessage, isLoading } = useCopilotChat();
@@ -25,6 +26,7 @@ export const FlowletAssistant = () => {
     configError,
     transactions,
     rules,
+    refetchConfig,
   } = useAssistant();
 
   useCopilotReadable(
@@ -104,12 +106,12 @@ export const FlowletAssistant = () => {
     available: "enabled",
     parameters: [
       {
-        name: "amount",
+        name: "fromAmount",
         type: "number",
         description: "The amount to pay",
       },
       {
-        name: "currency",
+        name: "fromCurrency",
         type: "string",
         description: "The currency to pay in",
       },
@@ -119,7 +121,7 @@ export const FlowletAssistant = () => {
         description: "The frequency to pay in",
       },
       {
-        name: "destinationWalletAddress",
+        name: "toWalletAddress",
         type: "string",
         description: "The wallet address to pay to",
       },
@@ -134,7 +136,9 @@ export const FlowletAssistant = () => {
         description: "Whether the user reviewed and confirmed the payment",
       },
     ],
-    handler: (response) => {
+    handler: async (response) => {
+      await postJSON("/api/v1/trading/rules", response);
+      await refetchConfig();
       console.log("response", response);
     },
   });
@@ -162,12 +166,19 @@ export const FlowletAssistant = () => {
           description: "The crypto currency to trade to",
         },
         {
+          name: "toAmount",
+          type: "number",
+          description: "The amount to trade to",
+        },
+        {
           name: "didUserConfirm",
           type: "boolean",
           description: "Whether the user reviewed and confirmed the trade",
         },
       ],
-      handler: (response) => {
+      handler: async (response) => {
+        await postJSON("/api/v1/trading/transactions", response);
+        await refetchConfig();
         console.log("response", response);
       },
     },
@@ -213,7 +224,9 @@ export const FlowletAssistant = () => {
         description: "Whether the user reviewed and confirmed the rule",
       },
     ],
-    handler: (response) => {
+    handler: async (response) => {
+      await postJSON("/api/v1/trading/rules", response);
+      await refetchConfig();
       console.log("response", response);
     },
   });
@@ -267,6 +280,30 @@ You cannot perform any operations that are outside of above list.
 
 BACKGROUND
 You are built by CopilotKit, an open-source framework for building agentic applications.
+
+TRADING CRYPTO
+The user can trade crypto between two currencies. kinda like "Let's swap 1 ETH to USDT", or "Let's sell 10 USDT and buy btc" or "Let's buy 10 SOL". You are to analayze the currency that the trade is from and to, calculate the toAmount based on the fromAmount and the exchange rate, and run the tradeCrypto action with the response.
+
+EXCHANGE RATES
+The type of exchange rates is as follows:
+{
+  ETH: number,
+  BTC: number,
+  SOL: number,
+  USDT: number,
+}
+
+Each number can be a floating point number. You are provided this data through the useCopilotReadable hook with the description "Exchange Rates".
+
+It's a record of the amount of the currency you need to spend to buy 1 USDT.
+So if the user wants to buy 10 SOL, you need to calculate the amount in USDT that the user needs to spend to buy 10 SOL. Which is 10 / (0.0058 / 1) = 172.41 USDT. or if they want to sell 10 SOL and buy btc, you need to calculate the amount in btc that the user will get. Which is 10 / (0.0058 / 0.0000097) = 0.016724137931034482 BTC.
+
+FORMULA TO CALCULATE THE EXCHANGE RATES
+
+fromCurrencyAmount / (fromCurrencyExchangeRate / toCurrencyExchangeRate) = toCurrencyAmount
+
+DO NOT Explain the exchange rates to the user. Just calculate it and show the result. The response should be like: "Do you want to proceed with this trade: selling 5 SOL to receive approximately 0.37069 ETH?"
+
 
 DETAILS
 - Do not print the wallet information in your responses. If user asks for it, show the wallet information using the walletInfo action. 

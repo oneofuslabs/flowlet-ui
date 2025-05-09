@@ -71,8 +71,7 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
 
   useCopilotReadable(
     {
-      description:
-        "Exchange Rates representing the amount you can buy with 1 USDT",
+      description: "Exchange Rates",
       value: config?.exchangeRates as ExchangeRates | null,
       available: "enabled",
     },
