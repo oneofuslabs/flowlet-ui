@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Copy } from "lucide-react";
-import { CryptoCurrencyAmount } from "../copilot/onboarding-chat/states/use-global-state";
+import { CryptoCurrencyAmount, Wallet } from "@/types/core";
 
 const handleCopy = async (text: string) => {
   try {
@@ -19,11 +19,7 @@ const handleCopy = async (text: string) => {
   }
 };
 
-const handleDownload = (wallet: {
-  walletAddress: string;
-  walletPrivateKey: string;
-  balance: CryptoCurrencyAmount[] | null;
-}) => {
+const handleDownload = (wallet: Wallet) => {
   const element = document.createElement("a");
   const file = new Blob([JSON.stringify(wallet, null, 2)], {
     type: "application/json",
@@ -35,15 +31,7 @@ const handleDownload = (wallet: {
   document.body.removeChild(element);
 };
 
-export const WalletInfo = ({
-  wallet,
-}: {
-  wallet: {
-    walletAddress: string;
-    walletPrivateKey: string;
-    balance: CryptoCurrencyAmount[] | null;
-  };
-}) => {
+export const WalletInfo = ({ wallet }: { wallet: Wallet }) => {
   return (
     <Card className="w-full max-w-2xl mx-auto gap-1">
       <CardHeader className="pb-1 gap-0">
@@ -72,14 +60,14 @@ export const WalletInfo = ({
             <div className="flex gap-2">
               <Input
                 readOnly
-                value={wallet.walletAddress}
+                value={wallet.address}
                 className="font-mono h-9"
               />
               <Button
                 variant="outline"
                 size="icon"
                 className="h-9 w-9"
-                onClick={() => handleCopy(wallet.walletAddress)}
+                onClick={() => handleCopy(wallet.address)}
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -92,7 +80,7 @@ export const WalletInfo = ({
             <div className="flex gap-2">
               <Input
                 readOnly
-                value={wallet.walletPrivateKey}
+                value={wallet.privateKey}
                 className="font-mono h-9"
                 type="password"
               />
@@ -100,7 +88,7 @@ export const WalletInfo = ({
                 variant="outline"
                 size="icon"
                 className="h-9 w-9"
-                onClick={() => handleCopy(wallet.walletPrivateKey)}
+                onClick={() => handleCopy(wallet.privateKey)}
               >
                 <Copy className="h-4 w-4" />
               </Button>

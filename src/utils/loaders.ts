@@ -1,4 +1,4 @@
-import { logOut, getToken } from "./auth";
+import { supabase } from "@/lib/supabase";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const keyValueToParamString = ({
@@ -31,12 +31,14 @@ const defaultContentTypeHeaders = {
   "content-type": "application/json",
 };
 
-const authorizationHeaders = () => ({
-  authorization: `Bearer ${getToken()}`,
+const authorizationHeaders = async () => ({
+  authorization: `Bearer ${
+    (await supabase.auth.getSession()).data.session?.access_token
+  }`,
 });
 
-const getHeaders = (headers: Record<string, string> = {}) => ({
-  ...authorizationHeaders(),
+const getHeaders = async (headers: Record<string, string> = {}) => ({
+  ...(await authorizationHeaders()),
   ...defaultContentTypeHeaders,
   ...headers,
 });
@@ -49,21 +51,18 @@ export type ErrorResponse = {
 };
 
 const handleResponse = async (res: Response) => {
-  const OK401 = [
-    `${apiUrl}/api/v1/auth/login`,
-    `${apiUrl}/api/v1/auth/register`,
-  ];
-
-  const headers = Object.fromEntries(res.headers.entries());
-  console.log(headers);
+  // const OK401 = [
+  //   `${apiUrl}/api/v1/auth/login`,
+  //   `${apiUrl}/api/v1/auth/register`,
+  // ];
 
   if (res.ok) {
     return await res.json();
   } else {
     // Check for 401 Unauthorized
-    if (res.status === 401 && !OK401.includes(res.url)) {
-      return logOut();
-    }
+    // if (res.status === 401 && !OK401.includes(res.url)) {
+    //   return logOut();
+    // }
     // Continue with existing error handling
     return res.json().then((responseBody: Record<string, unknown>) =>
       Promise.reject({
@@ -76,29 +75,29 @@ const handleResponse = async (res: Response) => {
   }
 };
 
-export const postJSON = (
+export const postJSON = async (
   url: string,
   body: Record<string, unknown>,
   headers: Record<string, string> = {}
 ) =>
   fetch(`${apiUrl}${url}`, {
     method: "POST",
-    headers: getHeaders(headers),
+    headers: await getHeaders(headers),
     body: JSON.stringify(body),
   }).then(handleResponse);
 
-export const putJSON = (
+export const putJSON = async (
   url: string,
   body: Record<string, unknown>,
   headers: Record<string, string> = {}
 ) =>
   fetch(`${apiUrl}${url}`, {
     method: "PUT",
-    headers: getHeaders(headers),
+    headers: await getHeaders(headers),
     body: JSON.stringify(body),
   }).then(handleResponse);
 
-export const getJSON = (
+export const getJSON = async (
   url: string,
   queryParams: Record<string, string> = {},
   headers: Record<string, string> = {}
@@ -106,11 +105,11 @@ export const getJSON = (
   const urlWithQueryParams = buildUrl(url, queryParams);
   return fetch(`${apiUrl}${urlWithQueryParams}`, {
     method: "GET",
-    headers: getHeaders(headers),
+    headers: await getHeaders(headers),
   }).then(handleResponse);
 };
 
-export const deleteJSON = (
+export const deleteJSON = async (
   url: string,
   queryParams: Record<string, string> = {},
   headers: Record<string, string> = {}
@@ -118,6 +117,6 @@ export const deleteJSON = (
   const urlWithQueryParams = buildUrl(url, queryParams);
   return fetch(`${apiUrl}${urlWithQueryParams}`, {
     method: "DELETE",
-    headers: getHeaders(headers),
+    headers: await getHeaders(headers),
   }).then(handleResponse);
 };

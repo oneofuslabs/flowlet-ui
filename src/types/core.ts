@@ -1,22 +1,30 @@
+export type Profile = {
+  id: string;
+  email: string;
+  full_name: string;
+};
+
 export type CryptoCurrency = "ETH" | "BTC" | "SOL" | "USDT";
+
 export type CryptoCurrencyAmount = {
   currency: CryptoCurrency;
   amount: number;
 };
 
 export type Wallet = {
-  walletAddress: string;
-  walletPrivateKey: string;
-  balance: CryptoCurrencyAmount[] | null;
+  address: string;
+  privateKey: string;
+  balance?: CryptoCurrencyAmount[] | null;
 };
 
 export type ExchangeRates = Record<CryptoCurrency, number>;
 
 export type Transaction = {
-  transactionId: string;
+  id: string;
   fromAmount: number;
   fromCurrency: CryptoCurrency;
   toCurrency: CryptoCurrency;
+  toAmount: number;
   transactionDate: Date;
   transactionStatus: string;
   transactionHash: string;
@@ -24,13 +32,26 @@ export type Transaction = {
 };
 
 export type Rule = {
-  ruleId: string;
+  id: string;
   fromCurrency: CryptoCurrency;
   fromAmount: number;
-  toCurrency: CryptoCurrency;
-  threshold: number;
-  thresholdDirection: "above" | "below";
+  toCurrency?: CryptoCurrency;
+  // For recurring rules
+  toWalletAddress?: string;
+  frequency?: "daily" | "weekly" | "monthly" | "yearly";
+  // For trading rules
+  threshold?: number;
+  thresholdDirection?: "above" | "below";
   status: "active" | "inactive";
+  startDate?: Date;
+  endDate?: Date;
   created_at: Date;
   updated_at: Date;
+};
+
+export type Config = {
+  wallet: Wallet;
+  exchangeRates: ExchangeRates;
+  transactions: Transaction[];
+  rules: Rule[];
 };

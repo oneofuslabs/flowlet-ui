@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { getToken } from "../utils/auth";
+import { useAuth } from "../context/auth.context";
 interface ProtectedRouteProps {
   children?: React.ReactNode;
 }
@@ -7,8 +7,14 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
 
+  const { session, loading } = useAuth();
+
   // Check for access token in localStorage
-  const hasAccessToken = !!getToken();
+  const hasAccessToken = !!session && !loading;
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   if (!hasAccessToken) {
     // Redirect to login while saving the attempted location

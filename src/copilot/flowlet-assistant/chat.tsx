@@ -8,46 +8,47 @@ import { useEffect, useRef } from "react";
 import { MessageRole } from "@copilotkit/runtime-client-gql";
 import { TextMessage } from "@copilotkit/runtime-client-gql";
 import { CopilotChat } from "@copilotkit/react-ui";
-import { getJSON } from "@/utils/loaders";
-import { useQuery } from "@tanstack/react-query";
 import { WalletBalance, WalletInfo } from "../../components/wallet-info";
 import { useAssistant } from "@/copilot/flowlet-assistant/context";
+import { TransactionCard } from "@/components/transaction-card";
+import { RuleCard } from "@/components/rule-card";
 
 export const FlowletAssistant = () => {
   const { appendMessage, isLoading } = useCopilotChat();
   const intitialMessage = useRef(false);
-  const { wallet } = useAssistant();
-
   const {
-    data,
-    isLoading: profileLoading,
-    error,
-  } = useQuery({
-    queryKey: ["homeData"],
-    queryFn: () => getJSON("/api/v1/users/profile"),
-  });
+    wallet,
+    profile,
+    profileLoading,
+    profileError,
+    configLoading,
+    configError,
+    transactions,
+    rules,
+  } = useAssistant();
 
   useCopilotReadable(
     {
       description: "User Profile",
-      value: data?.profile as { full_name: string },
+      value: profile,
       available: "enabled",
     },
-    [data]
+    [profile]
   );
 
   useEffect(() => {
-    if (intitialMessage.current || isLoading || !data) return;
+    if (intitialMessage.current || isLoading || !profile || !wallet) return;
     intitialMessage.current = true;
     setTimeout(() => {
       appendMessage(
         new TextMessage({
-          content: `Hi, ${data.profile.full_name.split(" ")[0]}.`,
+          content: `Hi, ${profile?.full_name.split(" ")[0]}.`,
           role: MessageRole.Assistant,
         })
       );
     }, 500);
-  }, [data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, wallet]);
 
   useCopilotAction({
     name: "walletInfo",
@@ -64,6 +65,36 @@ export const FlowletAssistant = () => {
     available: wallet ? "enabled" : "disabled",
     render: () => {
       return <WalletBalance balance={wallet?.balance ?? null} />;
+    },
+  });
+
+  useCopilotAction({
+    name: "showTransactions",
+    description: "Show user their transaction history",
+    available: transactions ? "enabled" : "disabled",
+    render: () => {
+      return (
+        <div className="flex flex-col gap-4">
+          {transactions?.map((transaction) => (
+            <TransactionCard key={transaction.id} transaction={transaction} />
+          ))}
+        </div>
+      );
+    },
+  });
+
+  useCopilotAction({
+    name: "showRules",
+    description: "Show user their active rules",
+    available: rules ? "enabled" : "disabled",
+    render: () => {
+      return (
+        <div className="flex flex-col gap-4">
+          {rules?.map((rule) => (
+            <RuleCard key={rule.id} rule={rule} />
+          ))}
+        </div>
+      );
     },
   });
 
@@ -187,9 +218,11 @@ export const FlowletAssistant = () => {
     },
   });
 
-  if (error) return <div>Error: {error.message}</div>;
+  if (profileError) return <div>Profile Error: {profileError.message}</div>;
+  if (configError) return <div>Config Error: {configError.message}</div>;
 
-  if (profileLoading || !data) return <div>Loading...</div>;
+  if (profileLoading || !profile || configLoading || !wallet)
+    return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col h-[calc(100vh-150px)] w-full rounded-xl shadow-sm border border-neutral-200">
@@ -241,6 +274,12 @@ DETAILS
 
 - Do not show the wallet balance in your responses. If user asks for it, show the wallet balance using the walletBalance action.
 - Always say "Above is your wallet balance. What else do you want to do?" after you run the walletBalance action.
+
+- Do not show the transaction history in your responses. If user asks for it, show the transaction history using the showTransactions action.
+- Always say "Above is your transaction history. What else do you want to do?" after you run the showTransactions action.
+
+- Do not show the rules in your responses. If user asks for it, show the rules using the showRules action.
+- Always say "Above is a list of your rules. What else do you want to do?" after you run the showRules action.
 
 
 NOTICES

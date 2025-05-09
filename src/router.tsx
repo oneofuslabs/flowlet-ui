@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 // Layouts
 import RootLayout from "./components/root-layout";
@@ -9,42 +9,14 @@ import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/protected-route";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import { logOut, setToken, setUser } from "./utils/auth";
-import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { useAuth } from "./context/auth.context";
 import { ForgotPassword, ResetPassword } from "./pages/ForgotPassword";
+import { useAuth } from "./context/auth.context";
 
 const Verification = ({
   resetPassword = false,
 }: {
   resetPassword?: boolean;
 }) => {
-  const { hash } = useLocation();
-  const { fetchUser } = useAuth();
-  const navigate = useNavigate();
-
-  const verificationMutation = useMutation({
-    mutationFn: async () => {
-      const params = new URLSearchParams(hash.slice(1));
-      const accessToken = params.get("access_token");
-      if (accessToken) {
-        setToken(accessToken);
-        const user = await fetchUser();
-        setUser(user);
-        if (!resetPassword) {
-          setTimeout(() => {
-            navigate("/");
-          }, 1000);
-        }
-      }
-    },
-  });
-
-  useEffect(() => {
-    verificationMutation.mutate();
-  }, []);
-
   if (resetPassword) {
     return <ResetPassword />;
   }
@@ -53,7 +25,8 @@ const Verification = ({
 };
 
 const Logout = () => {
-  logOut();
+  const { signOut } = useAuth();
+  signOut();
   return <div>Logging out...</div>;
 };
 

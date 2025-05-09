@@ -4,7 +4,8 @@ import {
   useCopilotAdditionalInstructions,
   useCopilotReadable,
 } from "@copilotkit/react-core";
-import { CryptoCurrency, useGlobalOnboardingState } from "./use-global-state";
+import { useGlobalOnboardingState } from "./use-global-state";
+import { CryptoCurrency } from "@/types/core";
 // import { BuyCrypto } from "../components/buy-crypto";
 // import { WalletInfo } from "../components/wallet-info";
 const createWallet = async () => ({
