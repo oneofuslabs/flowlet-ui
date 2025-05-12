@@ -13,7 +13,7 @@ const getCurrencyColor = (currency: CryptoCurrency) => {
     BTC: "text-orange-500",
     ETH: "text-blue-500",
     SOL: "text-purple-500",
-    USDT: "text-green-500",
+    USDC: "text-green-500",
   };
   return colors[currency];
 };
