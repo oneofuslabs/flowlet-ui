@@ -4,7 +4,7 @@ import {
   useCopilotChat,
   useCopilotReadable,
 } from "@copilotkit/react-core";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessageRole } from "@copilotkit/runtime-client-gql";
 import { TextMessage } from "@copilotkit/runtime-client-gql";
 import { CopilotChat } from "@copilotkit/react-ui";
@@ -29,6 +29,9 @@ export const FlowletAssistant = () => {
     refetchConfig,
   } = useAssistant();
 
+  const [txLink, setTxLink] = useState("");
+  const [swapDone, setSwapDone] = useState(false);
+
   useCopilotReadable(
     {
       description: "User Profile",
@@ -51,6 +54,12 @@ export const FlowletAssistant = () => {
     }, 500);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile, wallet]);
+
+  useEffect(() => {
+    console.log({ txLink });
+    if (txLink === "") return;
+    appendMessage(new TextMessage({ content: txLink, role: MessageRole.Assistant }));
+  }, [txLink]);
 
   useCopilotAction({
     name: "walletInfo",
@@ -177,12 +186,27 @@ export const FlowletAssistant = () => {
         },
       ],
       handler: async (response) => {
-        await postJSON("/api/v1/trading/transactions", response);
+        //await postJSON("/api/v1/trading/transactions", response);
+        const apiResponse = await postJSON("/api/v1/trade/swap", response);
+        if( apiResponse.link ){
+          setTxLink(apiResponse.link);
+        }
         await refetchConfig();
         console.log("response", response);
+        setSwapDone(true);
+      },
+      render: ({ status }) => {   
+        if (status === 'inProgress' || !swapDone) {
+          return <div>Trading...</div>;
+        }
+        return (
+          <a href={txLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+            View on explorer
+          </a>
+        );
       },
     },
-    []
+    [txLink, swapDone]
   );
 
   useCopilotAction({
@@ -230,6 +254,8 @@ export const FlowletAssistant = () => {
       console.log("response", response);
     },
   });
+
+  //fromCurrencyAmount / (fromCurrencyExchangeRate / toCurrencyExchangeRate) = toCurrencyAmount
 
   if (profileError) return <div>Profile Error: {profileError.message}</div>;
   if (configError) return <div>Config Error: {configError.message}</div>;
@@ -282,7 +308,7 @@ BACKGROUND
 You are built by CopilotKit, an open-source framework for building agentic applications.
 
 TRADING CRYPTO
-The user can trade crypto between two currencies. kinda like "Let's swap 1 ETH to USDT", or "Let's sell 10 USDT and buy btc" or "Let's buy 10 SOL". You are to analayze the currency that the trade is from and to, calculate the toAmount based on the fromAmount and the exchange rate, and run the tradeCrypto action with the response.
+The user can trade crypto between two currencies. kinda like "Let's swap 1 ETH to USDC", or "Let's sell 10 USDC and buy btc" or "Let's buy 10 SOL". You are to analayze the currency that the trade is from and to, calculate the toAmount based on the fromAmount and the exchange rate, and run the tradeCrypto action with the response.
 
 EXCHANGE RATES
 The type of exchange rates is as follows:
@@ -290,17 +316,17 @@ The type of exchange rates is as follows:
   ETH: number,
   BTC: number,
   SOL: number,
-  USDT: number,
+  USDC: number,
 }
 
 Each number can be a floating point number. You are provided this data through the useCopilotReadable hook with the description "Exchange Rates".
 
-It's a record of the amount of the currency you need to spend to buy 1 USDT.
-So if the user wants to buy 10 SOL, you need to calculate the amount in USDT that the user needs to spend to buy 10 SOL. Which is 10 / (0.0058 / 1) = 172.41 USDT. or if they want to sell 10 SOL and buy btc, you need to calculate the amount in btc that the user will get. Which is 10 / (0.0058 / 0.0000097) = 0.016724137931034482 BTC.
+It's a record of the amount of the currency you need to spend to buy 1 USDC.
+So if the user wants to buy 10 SOL, you need to calculate the amount in USDC that the user needs to spend to buy 10 SOL. Which is 10 / (0.0058 / 1) = 172.41 USDC. or if they want to sell 10 SOL and buy btc, you need to calculate the amount in btc that the user will get. Which is 10 / (0.0058 / 0.0000097) = 0.016724137931034482 BTC.
 
 FORMULA TO CALCULATE THE EXCHANGE RATES
 
-fromCurrencyAmount / (fromCurrencyExchangeRate / toCurrencyExchangeRate) = toCurrencyAmount
+toCurrencyAmount = fromCurrencyAmount * (toCurrencyExchangeRate / fromCurrencyExchangeRate)
 
 DO NOT Explain the exchange rates to the user. Just calculate it and show the result. The response should be like: "Do you want to proceed with this trade: selling 5 SOL to receive approximately 0.37069 ETH?"
 

@@ -4,7 +4,7 @@ export type Profile = {
   full_name: string;
 };
 
-export type CryptoCurrency = "ETH" | "BTC" | "SOL" | "USDT";
+export type CryptoCurrency = "ETH" | "BTC" | "SOL" | "USDC";
 
 export type CryptoCurrencyAmount = {
   currency: CryptoCurrency;
