@@ -5,17 +5,11 @@ import { OnboardingChat } from "@/copilot/onboarding-chat/chat";
 import { GlobalOnboardingStateProvider } from "@/copilot/onboarding-chat/states/use-global-state";
 import { FlowletAssistant } from "@/copilot/flowlet-assistant/chat";
 import { AssistantProvider } from "@/copilot/flowlet-assistant/context";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { getJSON } from "@/utils/loaders";
 import { Config, Profile } from "@/types/core";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
-  const [currentChat, setCurrentChat] = useState<"flowlet" | "onboarding">(
-    "onboarding"
-  );
-
   const {
     data: profile,
     isLoading: profileLoading,
@@ -49,12 +43,6 @@ export default function Dashboard() {
   return (
     <PageWrapper title="Flowlet Assistant">
       <div className="container mx-auto px-4 py-8">
-        <Button variant="outline" onClick={() => setCurrentChat("flowlet")}>
-          Flowlet
-        </Button>
-        <Button variant="outline" onClick={() => setCurrentChat("onboarding")}>
-          Onboarding
-        </Button>
         <div className="flex justify-end">
           <CopilotKit publicApiKey={import.meta.env.VITE_COPILOT_PUBLIC_KEY}>
             {config.wallet ? (
