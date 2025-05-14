@@ -84,7 +84,11 @@ export default function Transactions() {
   }, [transactionData, typeFilter, sortField, sortOrder]);
 
   return (
-    <PageWrapper title="Transactions" noPadding>
+    <PageWrapper
+      title="Transactions"
+      noPadding
+      className="max-w-2xl w-full mx-auto"
+    >
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-0">
           <div className="flex gap-4 items-center flex-wrap">

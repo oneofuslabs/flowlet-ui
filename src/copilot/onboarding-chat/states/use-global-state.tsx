@@ -1,33 +1,23 @@
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { createContext, useContext, useState, ReactNode } from "react";
-import { CryptoCurrencyAmount } from "@/types/core";
+import { Profile, Wallet } from "@/types/core";
+import { getJSON, postJSON, patchJSON } from "@/utils/loaders";
+import { useQuery } from "@tanstack/react-query";
 export const GlobalStateContext = createContext(null);
 
-export type OnboardingStage =
-  | "getFullName"
-  | "createWallet"
-  | "buyCrypto"
-  | "reviewBuyCrypto"
-  | "createRule"
-  | "reviewRule";
+export type OnboardingStage = "getFullName" | "createWallet";
 
 export interface GlobalStateOnboardingState {
   stage: OnboardingStage;
   setStage: (stage: OnboardingStage) => void;
   fullName: string;
   setFullName: (fullName: string) => void;
-  wallet: {
-    walletAddress: string;
-    walletPrivateKey: string;
-  } | null;
-  setWallet: (
-    wallet: {
-      walletAddress: string;
-      walletPrivateKey: string;
-    } | null
-  ) => void;
-  buyAmount: CryptoCurrencyAmount | null;
-  setBuyAmount: (buyAmount: CryptoCurrencyAmount | null) => void;
+  wallet: Wallet | null;
+  setWallet: (wallet: Wallet | null) => void;
+  profile: Profile | null;
+  profileLoading: boolean;
+  createWallet: () => Promise<Wallet>;
+  saveName: (fullName: string) => Promise<void>;
 }
 
 export const GlobalStateOnboardingContext =
@@ -50,11 +40,12 @@ export function GlobalOnboardingStateProvider({
 }) {
   const [stage, setStage] = useState<OnboardingStage>("getFullName");
   const [fullName, setFullName] = useState<string>("");
-  const [wallet, setWallet] = useState<{
-    walletAddress: string;
-    walletPrivateKey: string;
-  } | null>(null);
-  const [buyAmount, setBuyAmount] = useState<CryptoCurrencyAmount | null>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+
+  const { data: profile, isLoading: profileLoading } = useQuery<Profile>({
+    queryKey: ["profile"],
+    queryFn: () => getJSON("/api/v1/users/profile"),
+  });
 
   useCopilotReadable({
     description: "Currently Specified Information",
@@ -74,22 +65,24 @@ export function GlobalOnboardingStateProvider({
         fullName,
         setFullName: (fullName: string) => {
           setFullName(fullName);
-          console.log("Full name set to:", fullName);
         },
         wallet,
-        setWallet: (
-          wallet: {
-            walletAddress: string;
-            walletPrivateKey: string;
-          } | null
-        ) => {
+        setWallet: (wallet: Wallet | null) => {
           setWallet(wallet);
           console.log("Wallet set to:", wallet);
         },
-        buyAmount,
-        setBuyAmount: (buyAmount: CryptoCurrencyAmount | null) => {
-          setBuyAmount(buyAmount);
-          console.log("Buy amount set to:", buyAmount);
+        profile: profile || null,
+        profileLoading,
+        saveName: async (fullName: string) =>
+          await patchJSON("/api/v1/users/profile", {
+            full_name: fullName,
+          }),
+        createWallet: async () => {
+          const wallet = await postJSON("/api/v1/wallet", {
+            userId: profile?.id,
+          });
+          setWallet(wallet as Wallet);
+          return wallet as Wallet;
         },
       }}
     >

@@ -82,7 +82,7 @@ export default function Rules() {
   }, [allRules, typeFilter, statusFilter, sortField, sortOrder]);
 
   return (
-    <PageWrapper title="Rules" noPadding>
+    <PageWrapper title="Rules" noPadding className="max-w-3xl w-full mx-auto">
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-0">
           <div className="flex gap-4 items-center flex-wrap">

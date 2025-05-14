@@ -17,18 +17,8 @@ import { RuleCard } from "@/components/rule-card";
 export const FlowletAssistant = () => {
   const { appendMessage, isLoading } = useCopilotChat();
   const intitialMessage = useRef(false);
-  const {
-    wallet,
-    profile,
-    profileLoading,
-    profileError,
-    configLoading,
-    configError,
-    transactions,
-    rules,
-    refetchConfig,
-    exchangeRates,
-  } = useAssistant();
+  const { wallet, profile, transactions, rules, refetchConfig, exchangeRates } =
+    useAssistant();
 
   const [txLink, setTxLink] = useState("");
   const [swapDone, setSwapDone] = useState(false);
@@ -43,7 +33,8 @@ export const FlowletAssistant = () => {
   );
 
   useEffect(() => {
-    if (intitialMessage.current || isLoading || !profile || !wallet) return;
+    console.log({ profile, wallet });
+    if (intitialMessage.current || isLoading || !profile) return;
     intitialMessage.current = true;
     setTimeout(() => {
       appendMessage(
@@ -299,14 +290,6 @@ export const FlowletAssistant = () => {
       await refetchConfig();
     },
   });
-
-  //fromCurrencyAmount / (fromCurrencyExchangeRate / toCurrencyExchangeRate) = toCurrencyAmount
-
-  if (profileError) return <div>Profile Error: {profileError.message}</div>;
-  if (configError) return <div>Config Error: {configError.message}</div>;
-
-  if (profileLoading || !profile || configLoading || !wallet)
-    return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col h-[calc(100vh-180px)] w-full rounded-xl shadow-sm border border-neutral-200">

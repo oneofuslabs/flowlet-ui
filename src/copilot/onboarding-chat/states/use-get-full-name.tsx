@@ -6,7 +6,7 @@ import {
 import { useGlobalOnboardingState } from "./use-global-state";
 
 export function useStageGetFullName() {
-  const { setFullName, stage, setStage } = useGlobalOnboardingState();
+  const { setFullName, stage, setStage, saveName } = useGlobalOnboardingState();
   // Conditionally add additional instructions for the agent's prompt.
   useCopilotAdditionalInstructions(
     {
@@ -31,6 +31,8 @@ export function useStageGetFullName() {
         },
       ],
       handler: async (response) => {
+        const user = await saveName(response.fullName);
+        console.log("User saved:", user);
         setFullName(response.fullName);
         setStage("createWallet");
       },

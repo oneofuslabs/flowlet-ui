@@ -96,7 +96,7 @@ export const WalletBalance = ({
   balance: CryptoCurrencyAmount[] | null;
 }) => {
   return (
-    <Card className="w-full py-1 gap-1 hover:shadow-lg transition-shadow duration-200">
+    <Card className="w-full max-w-2xl mx-auto py-1 gap-1 hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-1 pt-2">
         <CardTitle className="text-base font-medium">
           Your Wallet Balance

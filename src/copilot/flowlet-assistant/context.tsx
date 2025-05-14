@@ -7,9 +7,8 @@ import {
   Transaction,
   Wallet,
 } from "@/types/core";
-import { getJSON } from "@/utils/loaders";
+
 import { useCopilotReadable } from "@copilotkit/react-core";
-import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
 type AssistantContextType = {
@@ -18,10 +17,6 @@ type AssistantContextType = {
   exchangeRates: ExchangeRates | null;
   transactions: Transaction[] | null;
   rules: Rule[] | null;
-  profileLoading: boolean;
-  profileError: Error | null;
-  configLoading: boolean;
-  configError: Error | null;
   refetchProfile: () => void;
   refetchConfig: () => void;
 };
@@ -30,27 +25,19 @@ const AssistantContext = createContext<AssistantContextType | undefined>(
   undefined
 );
 
-export function AssistantProvider({ children }: { children: React.ReactNode }) {
-  const {
-    data: profile,
-    isLoading: profileLoading,
-    error: profileError,
-    refetch: refetchProfile,
-  } = useQuery<Profile>({
-    queryKey: ["profile"],
-    queryFn: () => getJSON("/api/v1/users/profile"),
-  });
-
-  const {
-    data: config,
-    isLoading: configLoading,
-    error: configError,
-    refetch: refetchConfig,
-  } = useQuery<Config>({
-    queryKey: ["config"],
-    queryFn: () => getJSON("/api/v1/users/config"),
-  });
-
+export function AssistantProvider({
+  children,
+  profile,
+  refetchProfile,
+  config,
+  refetchConfig,
+}: {
+  children: React.ReactNode;
+  profile: Profile;
+  config: Config;
+  refetchProfile: () => void;
+  refetchConfig: () => void;
+}) {
   // const {
   //   data: wallet,
   //   isLoading: walletLoading,
@@ -115,14 +102,10 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
     <AssistantContext.Provider
       value={{
         profile: profile ?? null,
-        profileLoading,
-        profileError,
         wallet: config?.wallet ?? null,
         exchangeRates: config?.exchangeRates ?? null,
         transactions: config?.transactions ?? null,
         rules: config?.rules ?? null,
-        configLoading,
-        configError,
         refetchProfile,
         refetchConfig,
       }}

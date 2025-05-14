@@ -97,6 +97,17 @@ export const putJSON = async (
     body: JSON.stringify(body),
   }).then(handleResponse);
 
+export const patchJSON = async (
+  url: string,
+  body: Record<string, unknown>,
+  headers: Record<string, string> = {}
+) =>
+  fetch(`${apiUrl}${url}`, {
+    method: "PATCH",
+    headers: await getHeaders(headers),
+    body: JSON.stringify(body),
+  }).then(handleResponse);
+
 export const getJSON = async (
   url: string,
   queryParams: Record<string, string> = {},

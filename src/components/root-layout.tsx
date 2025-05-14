@@ -26,8 +26,13 @@ export default function RootLayout() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink className="text-3xl text-foreground font-medium">
+                <BreadcrumbItem className=" md:block">
+                  <BreadcrumbLink className="text-3xl text-foreground font-medium flex items-center gap-2">
+                    <img
+                      src="/flowlet.png"
+                      alt="Logo"
+                      className="h-8 w-8 md:hidden"
+                    />{" "}
                     {title}
                   </BreadcrumbLink>
                 </BreadcrumbItem>

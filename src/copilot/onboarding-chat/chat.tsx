@@ -6,11 +6,7 @@ import { MessageRole } from "@copilotkit/runtime-client-gql";
 import { TextMessage } from "@copilotkit/runtime-client-gql";
 import { CopilotChat } from "@copilotkit/react-ui";
 
-import {
-  useStageBuyCrypto,
-  useStageCreateWallet,
-} from "./states/use-create-wallet";
-import { useStageCreateRule } from "./states/use-create-rule";
+import { useStageCreateWallet } from "./states/use-create-wallet";
 
 export const OnboardingChat = () => {
   const { appendMessage, isLoading } = useCopilotChat();
@@ -19,8 +15,6 @@ export const OnboardingChat = () => {
   // init stages
   useStageGetFullName();
   useStageCreateWallet();
-  useStageBuyCrypto();
-  useStageCreateRule();
 
   useEffect(() => {
     if (intitialMessage.current || isLoading) return;
@@ -30,7 +24,7 @@ export const OnboardingChat = () => {
       appendMessage(
         new TextMessage({
           content:
-            "Hi, I'm Flowlet, your AI assistant for your web3 wallet. First, let's get your full name before we get started.",
+            "Hi, I'm Flowlet, your AI assistant for your web3 wallet. Let's get your full name before we get started.",
           role: MessageRole.Assistant,
         })
       );
@@ -53,9 +47,6 @@ You are trying to help the user get onboarded into flowlet.ai your ai assistant 
 The user will be going through a series of stages to accomplish this goal. Please help
 them through the process with their tools and data keeping in mind the current stage of the interaction. Do not proceed to the next
 stage until the current stage is complete. You must take each stage one at a time, do not skip any stages.
-
-BACKGROUND
-You are built by CopilotKit, an open-source framework for building agentic applications.
 
 DETAILS
 You will be going through a series of stages to get the user onboarded into flowlet.ai. Each stage will have its own unique instructions, tools and data. Please evaluate your current stage
