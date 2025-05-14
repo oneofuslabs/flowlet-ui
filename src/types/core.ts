@@ -45,21 +45,27 @@ export type Transaction = {
 };
 
 export type Rule = {
-  id: string;
-  fromCurrency: CryptoCurrency;
-  fromAmount: number;
-  toCurrency?: CryptoCurrency;
-  // For recurring rules
-  toWalletAddress?: string;
+  id: number;
+  type: "transfer" | "trade";
+  fromWallet?: string;
+  toWallet?: string;
+  currency?: string;
+  amount: number;
   frequency?: "daily" | "weekly" | "monthly" | "yearly";
-  // For trading rules
-  threshold?: number;
-  thresholdDirection?: "above" | "below";
-  status: "active" | "inactive";
-  startDate?: Date;
-  endDate?: Date;
-  created_at: Date;
-  updated_at: Date;
+  startDate?: string;
+  created_at: string;
+  completed_at?: string;
+  transaction?: {
+    created_at: string;
+    txHash: string;
+    txHashLink: string;
+  };
+  // For trade rules
+  tradeType?: "BUY" | "SELL";
+  fromCurrency?: string;
+  toCurrency?: string;
+  tresholdPrice?: number;
+  tresholdDirection?: "ABOVE" | "BELOW";
 };
 
 export type Config = {

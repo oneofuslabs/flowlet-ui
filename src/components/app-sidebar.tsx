@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  ArrowLeftRight,
-  Bot,
-  ClipboardCheck,
-  LayoutDashboard,
-  Wallet,
-} from "lucide-react";
+import { ArrowLeftRight, Bot, ClipboardCheck, Wallet } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";

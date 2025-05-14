@@ -31,6 +31,17 @@ const handleDownload = (wallet: Wallet) => {
   document.body.removeChild(element);
 };
 
+// Add color mapping function for cryptocurrencies
+const getCurrencyColor = (currency: string) => {
+  const colors: Record<string, string> = {
+    BTC: "text-orange-500",
+    ETH: "text-blue-500",
+    SOL: "text-purple-500",
+    USDC: "text-green-500",
+  };
+  return colors[currency] || "text-gray-500";
+};
+
 export const WalletInfo = ({ wallet }: { wallet: Wallet }) => {
   return (
     <Card className="w-full max-w-2xl mx-auto gap-1">
@@ -44,7 +55,7 @@ export const WalletInfo = ({ wallet }: { wallet: Wallet }) => {
             className="flex gap-2"
           >
             <Download className="h-4 w-4" />
-            Download
+            Export
           </Button>
         </div>
         <CardDescription className="text-sm">
@@ -73,27 +84,6 @@ export const WalletInfo = ({ wallet }: { wallet: Wallet }) => {
               </Button>
             </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Private Key
-            </label>
-            <div className="flex gap-2">
-              <Input
-                readOnly
-                value={wallet.privateKey}
-                className="font-mono h-9"
-                type="password"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => handleCopy(wallet.privateKey)}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>
@@ -106,7 +96,7 @@ export const WalletBalance = ({
   balance: CryptoCurrencyAmount[] | null;
 }) => {
   return (
-    <Card className="w-full max-w-[200px]  py-1 gap-1">
+    <Card className="w-full py-1 gap-1 hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-1 pt-2">
         <CardTitle className="text-base font-medium">
           Your Wallet Balance
@@ -116,15 +106,35 @@ export const WalletBalance = ({
         {balance?.map((balance) => (
           <div
             key={balance.currency}
-            className="flex items-center justify-between py-1.5 border-b last:border-0 text-sm"
+            className="flex items-center justify-between py-2.5 border-b last:border-0"
           >
-            <span className="text-muted-foreground">{balance.currency}</span>
-            <span className="font-mono">{balance.amount}</span>
+            <div className="flex items-center space-x-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  balance.currency === "BTC"
+                    ? "bg-orange-500"
+                    : balance.currency === "ETH"
+                    ? "bg-blue-500"
+                    : balance.currency === "SOL"
+                    ? "bg-purple-500"
+                    : "bg-green-500"
+                }`}
+              ></div>
+              <span className="font-medium">{balance.currency}</span>
+            </div>
+            <span
+              className={`text-lg font-bold ${getCurrencyColor(
+                balance.currency
+              )}`}
+            >
+              {balance.amount}
+            </span>
           </div>
         ))}
         {(!balance || balance.length === 0) && (
-          <div className="text-center py-2 text-sm text-muted-foreground">
-            No balance to display
+          <div className="text-center py-4 text-sm text-muted-foreground">
+            <span className="block mb-1">No balance to display</span>
+            <span className="text-xs">Deposit funds to get started</span>
           </div>
         )}
       </CardContent>

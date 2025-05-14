@@ -11,8 +11,8 @@ import { CopilotChat } from "@copilotkit/react-ui";
 import { WalletBalance, WalletInfo } from "../../components/wallet-info";
 import { useAssistant } from "@/copilot/flowlet-assistant/context";
 import { TransactionCard } from "@/components/transaction-card";
-import { RuleCard } from "@/components/rule-card";
 import { postJSON } from "@/utils/loaders";
+import { RuleCard } from "@/components/rule-card";
 
 export const FlowletAssistant = () => {
   const { appendMessage, isLoading } = useCopilotChat();

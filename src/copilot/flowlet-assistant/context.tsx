@@ -7,7 +7,7 @@ import {
   Transaction,
   Wallet,
 } from "@/types/core";
-import { getJSON, postJSON } from "@/utils/loaders";
+import { getJSON } from "@/utils/loaders";
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
@@ -51,20 +51,20 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
     queryFn: () => getJSON("/api/v1/users/config"),
   });
 
-  const {
-    data: wallet,
-    isLoading: walletLoading,
-    error: walletError,
-    refetch: refetchWallet,
-  } = useQuery<Wallet>({
-    queryKey: ["wallet"],
-    queryFn: () =>
-      postJSON("/api/v1/wallet", {
-        userId: "47701548-3fdb-4690-b36c-2d65ee42d10a",
-      }),
-  });
+  // const {
+  //   data: wallet,
+  //   isLoading: walletLoading,
+  //   error: walletError,
+  //   refetch: refetchWallet,
+  // } = useQuery<Wallet>({
+  //   queryKey: ["wallet"],
+  //   queryFn: () =>
+  //     postJSON("/api/v1/wallet", {
+  //       userId: "47701548-3fdb-4690-b36c-2d65ee42d10a",
+  //     }),
+  // });
 
-  console.log({ wallet, walletLoading, walletError, refetchWallet });
+  // console.log({ wallet, walletLoading, walletError, refetchWallet });
 
   useCopilotReadable(
     {
