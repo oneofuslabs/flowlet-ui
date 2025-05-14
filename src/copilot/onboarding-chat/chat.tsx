@@ -38,7 +38,7 @@ export const OnboardingChat = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-[600px] w-full rounded-xl shadow-sm border border-neutral-200">
+    <div className="flex flex-col h-[calc(100vh-180px)] w-full rounded-xl shadow-sm border border-neutral-200">
       <div className="flex-1 w-full rounded-xl overflow-y-auto">
         <CopilotChat className="h-full w-full" instructions={systemPrompt} />
       </div>

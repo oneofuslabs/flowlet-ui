@@ -22,16 +22,26 @@ export type ExchangeRates = Record<
   { rate: number; tokenAddress: string }
 >;
 
+export type TransactionType = "stake" | "transfer" | "trade";
+export type TransactionStatus = "Active" | "Completed" | "Failed" | "Pending";
+
 export type Transaction = {
-  id: string;
-  fromAmount: number;
-  fromCurrency: CryptoCurrency;
-  toCurrency: CryptoCurrency;
-  toAmount: number;
-  transactionDate: Date;
-  transactionStatus: string;
-  transactionHash: string;
-  transactionType: string;
+  id: number;
+  created_at: string;
+  tokenName?: string;
+  tokenAddress?: string;
+  amount: number;
+  duration?: number;
+  programId?: string;
+  status?: TransactionStatus;
+  walletAddress: string;
+  fromWallet?: string;
+  toWallet?: string;
+  fromCurrency?: string;
+  toCurrency?: string;
+  txHash: string;
+  txHashLink: string;
+  type: TransactionType;
 };
 
 export type Rule = {

@@ -191,8 +191,8 @@ export const FlowletAssistant = () => {
       handler: async (response) => {
         //await postJSON("/api/v1/trading/transactions", response);
         const apiResponse = await postJSON("/api/v1/trade/swap", response);
-        if (apiResponse.link) {
-          setTxLink(apiResponse.link);
+        if (apiResponse.txHashLink) {
+          setTxLink(apiResponse.txHashLink);
         }
         await refetchConfig();
         console.log("response", response);
@@ -309,7 +309,7 @@ export const FlowletAssistant = () => {
     return <div>Loading...</div>;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-150px)] w-full rounded-xl shadow-sm border border-neutral-200">
+    <div className="flex flex-col h-[calc(100vh-180px)] w-full rounded-xl shadow-sm border border-neutral-200">
       <div className="flex-1 w-full rounded-xl overflow-y-auto">
         <CopilotChat className="h-full w-full" instructions={systemPrompt} />
       </div>
