@@ -17,7 +17,10 @@ export type Wallet = {
   balance?: CryptoCurrencyAmount[] | null;
 };
 
-export type ExchangeRates = Record<CryptoCurrency, number>;
+export type ExchangeRates = Record<
+  CryptoCurrency,
+  { rate: number; tokenAddress: string }
+>;
 
 export type Transaction = {
   id: string;

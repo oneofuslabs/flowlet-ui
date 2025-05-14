@@ -27,6 +27,7 @@ export const FlowletAssistant = () => {
     transactions,
     rules,
     refetchConfig,
+    exchangeRates,
   } = useAssistant();
 
   const [txLink, setTxLink] = useState("");
@@ -58,7 +59,9 @@ export const FlowletAssistant = () => {
   useEffect(() => {
     console.log({ txLink });
     if (txLink === "") return;
-    appendMessage(new TextMessage({ content: txLink, role: MessageRole.Assistant }));
+    appendMessage(
+      new TextMessage({ content: txLink, role: MessageRole.Assistant })
+    );
   }, [txLink]);
 
   useCopilotAction({
@@ -188,19 +191,24 @@ export const FlowletAssistant = () => {
       handler: async (response) => {
         //await postJSON("/api/v1/trading/transactions", response);
         const apiResponse = await postJSON("/api/v1/trade/swap", response);
-        if( apiResponse.link ){
+        if (apiResponse.link) {
           setTxLink(apiResponse.link);
         }
         await refetchConfig();
         console.log("response", response);
         setSwapDone(true);
       },
-      render: ({ status }) => {   
-        if (status === 'inProgress' || !swapDone) {
+      render: ({ status }) => {
+        if (status === "inProgress" || !swapDone) {
           return <div>Trading...</div>;
         }
         return (
-          <a href={txLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+          <a
+            href={txLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 underline"
+          >
             View on explorer
           </a>
         );
@@ -255,6 +263,43 @@ export const FlowletAssistant = () => {
     },
   });
 
+  useCopilotAction({
+    name: "transferCrypto",
+    description: "Transfer crypto to another wallet",
+    available: "enabled",
+    parameters: [
+      {
+        name: "tokenName",
+        type: "string",
+        description: "The name of the token to transfer",
+      },
+      {
+        name: "amount",
+        type: "number",
+        description: "The amount of the token to transfer",
+      },
+      {
+        name: "toWalletAddress",
+        type: "string",
+        description: "The wallet address to transfer the token to",
+      },
+      {
+        name: "didUserConfirm",
+        type: "boolean",
+        description: "Whether the user reviewed and confirmed the transfer",
+      },
+    ],
+    handler: async (response) => {
+      await postJSON("/api/v1/transfer/_token", {
+        ...response,
+        tokenAddress:
+          exchangeRates?.[response.tokenName as keyof typeof exchangeRates]
+            ?.tokenAddress || "",
+      });
+      await refetchConfig();
+    },
+  });
+
   //fromCurrencyAmount / (fromCurrencyExchangeRate / toCurrencyExchangeRate) = toCurrencyAmount
 
   if (profileError) return <div>Profile Error: {profileError.message}</div>;
@@ -279,7 +324,7 @@ Always start with the following message:
 ---
 I'm your AI assistant for your web3 wallet. I can help you with the following operations:
 
-<b>Trading:</b> Trade crypto, create smart rules around trading, and set up recurring payments.
+<b>Trading:</b> Trade crypto, create smart rules around trading, transfer crypto to another wallet, and set up recurring payments.
 
 <b>Information:</b> View your wallet balance, wallet address and private key, transaction history, and active rules.
 
@@ -289,6 +334,7 @@ Let me know how I can assist you today!
 You are now here to help the user with crypto operations. These operations are as follows:
 1. TRADING
   - Trade crypto
+  - Transfer crypto to another wallet
   - Create smart rules around crypto trading
   - Create recurring payments
 
@@ -306,6 +352,11 @@ You cannot perform any operations that are outside of above list.
 
 BACKGROUND
 You are built by CopilotKit, an open-source framework for building agentic applications.
+
+TRANSFERRING CRYPTO
+The user can transfer crypto to another wallet. You are to analyze the tokenName, amount, and toWalletAddress, and run the transferCrypto action with the response.
+
+Once you have all the paraemters, summarize the operation and ask the user for confirmation before doing anything.
 
 TRADING CRYPTO
 The user can trade crypto between two currencies. kinda like "Let's swap 1 ETH to USDC", or "Let's sell 10 USDC and buy btc" or "Let's buy 10 SOL". You are to analayze the currency that the trade is from and to, calculate the toAmount based on the fromAmount and the exchange rate, and run the tradeCrypto action with the response.
