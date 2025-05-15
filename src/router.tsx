@@ -15,6 +15,7 @@ import Transactions from "./pages/Transactions";
 import { useLayoutEffect } from "react";
 import Rules from "./pages/Rules";
 import Wallet from "./pages/Wallet";
+import Stakes from "./pages/Stakes";
 
 const Verification = ({
   resetPassword = false,
@@ -71,6 +72,7 @@ export function AppRoutes() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/rules" element={<Rules />} />
           <Route path="/wallet" element={<Wallet />} />
+          <Route path="/stakes" element={<Stakes />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

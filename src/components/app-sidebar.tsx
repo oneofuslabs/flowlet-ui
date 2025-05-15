@@ -1,5 +1,11 @@
 import * as React from "react";
-import { ArrowLeftRight, Bot, ClipboardCheck, Wallet } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Bot,
+  ChartLine,
+  ClipboardCheck,
+  Wallet,
+} from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -25,6 +31,11 @@ const data = {
       title: "Transactions",
       url: "/transactions",
       icon: ArrowLeftRight,
+    },
+    {
+      title: "Stakes",
+      url: "/stakes",
+      icon: ChartLine,
     },
     {
       title: "Rules",

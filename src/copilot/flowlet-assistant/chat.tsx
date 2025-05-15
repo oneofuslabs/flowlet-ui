@@ -17,8 +17,16 @@ import { RuleCard } from "@/components/rule-card";
 export const FlowletAssistant = () => {
   const { appendMessage, isLoading } = useCopilotChat();
   const intitialMessage = useRef(false);
-  const { wallet, profile, transactions, rules, refetchConfig, exchangeRates } =
-    useAssistant();
+  const {
+    wallet,
+    profile,
+    transactions,
+    rules,
+    refetchConfig,
+    exchangeRates,
+    setError,
+    error,
+  } = useAssistant();
 
   const [txLink, setTxLink] = useState("");
   const [swapDone, setSwapDone] = useState(false);
@@ -54,6 +62,22 @@ export const FlowletAssistant = () => {
       new TextMessage({ content: txLink, role: MessageRole.Assistant })
     );
   }, [txLink]);
+
+  useCopilotAction(
+    {
+      name: "errorHandling",
+      description: "Error Handling",
+      available: error ? "enabled" : "disabled",
+      render: () => {
+        return (
+          <div className="text-red-500">
+            <b>Error:</b> {error}
+          </div>
+        );
+      },
+    },
+    [error]
+  );
 
   useCopilotAction({
     name: "walletInfo",
@@ -189,15 +213,33 @@ export const FlowletAssistant = () => {
       ],
       handler: async (response) => {
         //await postJSON("/api/v1/trading/transactions", response);
-        const apiResponse = await postJSON("/api/v1/trade/swap", response);
-        if (apiResponse.txHashLink) {
-          setTxLink(apiResponse.txHashLink);
+        if (error) {
+          return;
         }
-        await refetchConfig();
-        console.log("response", response);
-        setSwapDone(true);
+        try {
+          const apiResponse = await postJSON("/api/v1/trade/swap", response);
+          if (apiResponse.txHashLink) {
+            setTxLink(apiResponse.txHashLink);
+          }
+          await refetchConfig();
+          console.log("response", response);
+          setSwapDone(true);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          console.log("error", error);
+          setError(error.error);
+          appendMessage(
+            new TextMessage({
+              content: "Trade failed with error: " + error.error,
+              role: MessageRole.Assistant,
+            })
+          );
+        }
       },
       render: ({ status }) => {
+        if (error) {
+          return <div>Error: {error}</div>;
+        }
         if (status === "inProgress" || !swapDone) {
           return <div>Trading...</div>;
         }
@@ -213,7 +255,7 @@ export const FlowletAssistant = () => {
         );
       },
     },
-    [txLink, swapDone]
+    [txLink, swapDone, error]
   );
 
   useCopilotAction({
@@ -344,6 +386,11 @@ You cannot perform any operations that are outside of above list.
 BACKGROUND
 You are built by CopilotKit, an open-source framework for building agentic applications.
 
+ERROR DATA HANDLING:
+There is a state called "error" in the context and if it is not null, you should show the error to the user. You have access to the error message with a useCopilotReadable hook with the description "Error". once the "Error"s value is not null, hijaclk the conversation, run the "errorHandling" action and apologize to the user.
+The error is set by the server errors returning from the API calls in copilot action handlers. Each handler might set the error state and if it is set, absoulutely stop whatever you are doing and run the "errorHandling" action. if you read the error state, neveer show a success message. IE. when trying to trade crypto if the api call in the handler fails, the error state is set. Once the error state is set, you should run the "errorHandling" action and apologize to the user. never ever show a success message. In the previous emssages you showed a success message, that is wrong.
+
+
 TRANSFERRING CRYPTO
 The user can transfer crypto to another wallet. You are to analyze the tokenName, amount, and toWalletAddress, and run the transferCrypto action with the response.
 
@@ -385,7 +432,7 @@ DETAILS
 
 - Do not show the rules in your responses. If user asks for it, show the rules using the showRules action.
 - Always say "What else do you want to do?" after you run the showRules action.
-
+- if the tradeCrypto or any other action fails, the error state is set. Once the error state is set, you should run the "errorHandling" action and apologize to the user. never ever show a success message. Also never ever run the handler again for the failing action. Print "Apologies, I encountered an error. Please try again." and wait for the user to respond.
 
 NOTICES
 - DO NOT mention the word "stage" or "state" in your responses.

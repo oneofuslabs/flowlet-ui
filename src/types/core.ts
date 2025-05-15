@@ -25,6 +25,22 @@ export type ExchangeRates = Record<
 export type TransactionType = "stake" | "transfer" | "trade";
 export type TransactionStatus = "Active" | "Completed" | "Failed" | "Pending";
 
+export type StakeStatus = "delegated" | "withdrawn";
+
+export type Stake = {
+  id: string;
+  created_at: string;
+  profilesId: string;
+  walletAddress: string;
+  stakeAccount: string;
+  validator: string;
+  amount: number;
+  status: StakeStatus;
+  txHash: string;
+  tokenName: string;
+  tokenAddress: string;
+};
+
 export type Transaction = {
   id: number;
   created_at: string;

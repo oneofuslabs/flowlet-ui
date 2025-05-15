@@ -8,8 +8,11 @@ import {
   Wallet,
 } from "@/types/core";
 
-import { useCopilotReadable } from "@copilotkit/react-core";
-import { createContext, useContext } from "react";
+import {
+  useCopilotAdditionalInstructions,
+  useCopilotReadable,
+} from "@copilotkit/react-core";
+import { createContext, useContext, useState } from "react";
 
 type AssistantContextType = {
   profile: Profile | null;
@@ -19,6 +22,8 @@ type AssistantContextType = {
   rules: { active: Rule[]; completed: Rule[] } | null;
   refetchProfile: () => void;
   refetchConfig: () => void;
+  setError: (error: string) => void;
+  error: string | null;
 };
 
 const AssistantContext = createContext<AssistantContextType | undefined>(
@@ -52,6 +57,25 @@ export function AssistantProvider({
   // });
 
   // console.log({ wallet, walletLoading, walletError, refetchWallet });
+
+  const [error, setError] = useState<string | null>(null);
+
+  useCopilotAdditionalInstructions(
+    {
+      instructions: `ERROR STATE: one of the actions have failed and set an error message. You have the access to the error message with a useCopilotReadable hook with the description "Error". once the "Error"s value is not null, hijack the conversation, run the "errorHandling" action and apologize to the user. never ever show a success message. Also never ever run the handler again for the failing action. Print "Apologies, I encountered an error. Please try again." and wait for the user to respond.`,
+      available: error ? "enabled" : "disabled",
+    },
+    [error]
+  );
+
+  useCopilotReadable(
+    {
+      description: "Error",
+      value: error,
+      available: error ? "enabled" : "disabled",
+    },
+    [error]
+  );
 
   useCopilotReadable(
     {
@@ -108,6 +132,8 @@ export function AssistantProvider({
         rules: config?.rules ?? null,
         refetchProfile,
         refetchConfig,
+        setError,
+        error,
       }}
     >
       {children}
