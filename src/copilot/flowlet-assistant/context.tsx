@@ -16,7 +16,7 @@ type AssistantContextType = {
   wallet: Wallet | null;
   exchangeRates: ExchangeRates | null;
   transactions: Transaction[] | null;
-  rules: Rule[] | null;
+  rules: { active: Rule[]; completed: Rule[] } | null;
   refetchProfile: () => void;
   refetchConfig: () => void;
 };
@@ -92,7 +92,7 @@ export function AssistantProvider({
   useCopilotReadable(
     {
       description: "User Created Rules",
-      value: config?.rules as Rule[] | null,
+      value: config?.rules as { active: Rule[]; completed: Rule[] } | null,
       available: "enabled",
     },
     [config]

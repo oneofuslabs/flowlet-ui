@@ -1,23 +1,15 @@
-import { useCopilotReadable } from "@copilotkit/react-core";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Profile, Wallet } from "@/types/core";
-import { getJSON, postJSON, patchJSON } from "@/utils/loaders";
+import { getJSON, postJSON } from "@/utils/loaders";
 import { useQuery } from "@tanstack/react-query";
 export const GlobalStateContext = createContext(null);
 
-export type OnboardingStage = "getFullName" | "createWallet";
-
 export interface GlobalStateOnboardingState {
-  stage: OnboardingStage;
-  setStage: (stage: OnboardingStage) => void;
-  fullName: string;
-  setFullName: (fullName: string) => void;
   wallet: Wallet | null;
   setWallet: (wallet: Wallet | null) => void;
   profile: Profile | null;
   profileLoading: boolean;
   createWallet: () => Promise<Wallet>;
-  saveName: (fullName: string) => Promise<void>;
 }
 
 export const GlobalStateOnboardingContext =
@@ -38,8 +30,6 @@ export function GlobalOnboardingStateProvider({
 }: {
   children: ReactNode;
 }) {
-  const [stage, setStage] = useState<OnboardingStage>("getFullName");
-  const [fullName, setFullName] = useState<string>("");
   const [wallet, setWallet] = useState<Wallet | null>(null);
 
   const { data: profile, isLoading: profileLoading } = useQuery<Profile>({
@@ -47,25 +37,9 @@ export function GlobalOnboardingStateProvider({
     queryFn: () => getJSON("/api/v1/users/profile"),
   });
 
-  useCopilotReadable({
-    description: "Currently Specified Information",
-    value: {
-      currentStage: stage,
-    },
-  });
-
   return (
     <GlobalStateOnboardingContext.Provider
       value={{
-        stage,
-        setStage: (stage: OnboardingStage) => {
-          setStage(stage);
-          console.log("Stage set to:", stage);
-        },
-        fullName,
-        setFullName: (fullName: string) => {
-          setFullName(fullName);
-        },
         wallet,
         setWallet: (wallet: Wallet | null) => {
           setWallet(wallet);
@@ -73,16 +47,17 @@ export function GlobalOnboardingStateProvider({
         },
         profile: profile || null,
         profileLoading,
-        saveName: async (fullName: string) =>
-          await patchJSON("/api/v1/users/profile", {
-            full_name: fullName,
-          }),
         createWallet: async () => {
           const wallet = await postJSON("/api/v1/wallet", {
             userId: profile?.id,
           });
-          setWallet(wallet as Wallet);
-          return wallet as Wallet;
+          const _wallet = {
+            address: wallet.walletAddress,
+            privateKey: wallet.privateKey,
+            balance: wallet.balance,
+          };
+          setWallet(_wallet);
+          return _wallet as Wallet;
         },
       }}
     >

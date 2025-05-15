@@ -72,5 +72,5 @@ export type Config = {
   wallet: Wallet;
   exchangeRates: ExchangeRates;
   transactions: Transaction[];
-  rules: Rule[];
+  rules: { active: Rule[]; completed: Rule[] };
 };

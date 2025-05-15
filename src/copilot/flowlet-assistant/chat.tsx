@@ -39,7 +39,7 @@ export const FlowletAssistant = () => {
     setTimeout(() => {
       appendMessage(
         new TextMessage({
-          content: `Hi, ${profile?.full_name.split(" ")[0]}.`,
+          content: `Hi, there!`,
           role: MessageRole.Assistant,
         })
       );
@@ -80,9 +80,13 @@ export const FlowletAssistant = () => {
     render: () => {
       return (
         <div className="flex flex-col gap-4">
-          {transactions?.map((transaction) => (
-            <TransactionCard key={transaction.id} transaction={transaction} />
-          ))}
+          {transactions?.length === 0 ? (
+            <span>You don't have any transactions yet.</span>
+          ) : (
+            transactions?.map((transaction) => (
+              <TransactionCard key={transaction.id} transaction={transaction} />
+            ))
+          )}
         </div>
       );
     },
@@ -93,9 +97,13 @@ export const FlowletAssistant = () => {
     description: "Show user their active rules",
     available: rules ? "enabled" : "disabled",
     render: () => {
+      const _rules = rules ? [...rules.active, ...rules.completed] : [];
+      if (_rules.length === 0) {
+        return <span>You don't have any rules yet.</span>;
+      }
       return (
         <div className="flex flex-col gap-4">
-          {rules?.map((rule) => (
+          {_rules.map((rule) => (
             <RuleCard key={rule.id} rule={rule} />
           ))}
         </div>
@@ -373,10 +381,10 @@ DETAILS
 - Always say "Above is your wallet balance. What else do you want to do?" after you run the walletBalance action.
 
 - Do not show the transaction history in your responses. If user asks for it, show the transaction history using the showTransactions action.
-- Always say "Above is your transaction history. What else do you want to do?" after you run the showTransactions action.
+- Always say "What else do you want to do?" after you run the showTransactions action.
 
 - Do not show the rules in your responses. If user asks for it, show the rules using the showRules action.
-- Always say "Above is a list of your rules. What else do you want to do?" after you run the showRules action.
+- Always say "What else do you want to do?" after you run the showRules action.
 
 
 NOTICES
