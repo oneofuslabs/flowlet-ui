@@ -30,6 +30,12 @@ export const FlowletAssistant = () => {
 
   const [txLink, setTxLink] = useState("");
   const [swapDone, setSwapDone] = useState(false);
+  const executedRef = useRef(false);
+
+  function findTokenAddress(tokenName: string, tokens: Record<string, any>): string {
+    const match = Object.values(tokens).find((token) => token.tokenName === tokenName);
+    return match?.tokenAddress || "";
+  }
 
   useCopilotReadable(
     {
@@ -103,14 +109,25 @@ export const FlowletAssistant = () => {
     available: transactions ? "enabled" : "disabled",
     render: () => {
       return (
-        <div className="flex flex-col gap-4">
-          {transactions?.length === 0 ? (
-            <span>You don't have any transactions yet.</span>
-          ) : (
-            transactions?.map((transaction) => (
-              <TransactionCard key={transaction.id} transaction={transaction} />
-            ))
-          )}
+        <div>
+          <div className="flex flex-col gap-4">
+            {transactions?.length === 0 ? (
+              <span>You don't have any transactions yet.</span>
+            ) : (
+              transactions?.slice(0, 3).map((transaction) => (
+                <TransactionCard key={transaction.id} transaction={transaction} />
+              ))
+            )}
+          </div>
+          <div className="mt-4">
+            These are your latest 3 transactions.{" "}
+            <a
+              href="/transactions"
+              className="text-blue-500 underline"
+            >
+              View all transactions
+            </a>
+          </div>
         </div>
       );
     },
@@ -212,18 +229,27 @@ export const FlowletAssistant = () => {
         },
       ],
       handler: async (response) => {
+        if (executedRef.current) return;
+        executedRef.current = true;
         //await postJSON("/api/v1/trading/transactions", response);
         if (error) {
           return;
         }
         try {
-          const apiResponse = await postJSON("/api/v1/trade/swap", response);
+          const apiReq = {
+            amount: response.fromAmount,
+            fromCurrencyName: response.fromCurrency,
+            toCurrencyNAme: response.toCurrency,
+            fromCurrencyAddress: findTokenAddress(response.fromCurrency, exchangeRates!),
+            toCurrencyAddress: findTokenAddress(response.toCurrency, exchangeRates!),
+            userId: profile?.id,
+          };
+          const apiResponse = await postJSON("/api/v1/trade/swap", apiReq);
           if (apiResponse.txHashLink) {
             setTxLink(apiResponse.txHashLink);
           }
           await refetchConfig();
-          console.log("response", response);
-          setSwapDone(true);
+          return apiResponse;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           console.log("error", error);
@@ -234,25 +260,32 @@ export const FlowletAssistant = () => {
               role: MessageRole.Assistant,
             })
           );
+        } finally {
+          executedRef.current = false;
         }
       },
-      render: ({ status }) => {
-        if (error) {
-          return <div>Error: {error}</div>;
-        }
-        if (status === "inProgress" || !swapDone) {
+      render: ({ status, result }) => {
+        if (status === 'executing' || status === 'inProgress') {
           return <div>Trading...</div>;
+        } else if (status === 'complete') {
+          return (
+            <div>
+              <span className="px-2 py-1 rounded-lg bg-green-600 text-green-200 text-sm mr-2">Success</span> You can view the transaction details on&nbsp; 
+              <a
+                href={result.txHashLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
+              explorer
+              </a>
+            </div>
+          );
+        } else if (error) {
+          return <div>Error: {error}</div>;
+        } else {
+          return <div className="text-red-500">Apologies, I encountered an error. Please try again later.</div>;
         }
-        return (
-          <a
-            href={txLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 underline"
-          >
-            View on explorer
-          </a>
-        );
       },
     },
     [txLink, swapDone, error]
@@ -302,6 +335,21 @@ export const FlowletAssistant = () => {
       await refetchConfig();
       console.log("response", response);
     },
+    render: () => {
+      return (
+        <div>
+          <span className="px-2 py-1 rounded-lg bg-green-600 text-green-200 text-sm mr-2">Success</span> You can view the transaction details on&nbsp; 
+          <a
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 underline"
+          >
+          explorer
+          </a>
+        </div>
+      );
+    },
   });
 
   useCopilotAction({
@@ -331,13 +379,118 @@ export const FlowletAssistant = () => {
       },
     ],
     handler: async (response) => {
-      await postJSON("/api/v1/transfer/_token", {
-        ...response,
-        tokenAddress:
-          exchangeRates?.[response.tokenName as keyof typeof exchangeRates]
-            ?.tokenAddress || "",
-      });
-      await refetchConfig();
+      try {
+        const apiReq = {
+          amount: response.amount,
+          tokenName: response.tokenName,
+          tokenAddress: findTokenAddress(response.tokenName, exchangeRates!),
+          fromWallet: wallet?.address,
+          toWallet: response.toWalletAddress,
+          userId: profile?.id,
+        };
+        const apiResponse = await postJSON("/api/v1/transfer/token", apiReq);
+        if (apiResponse.txHashLink) {
+          setTxLink(apiResponse.txHashLink);
+        }
+        await refetchConfig();
+        return apiResponse;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.log("error", error);
+        setError(error.error);
+        appendMessage(
+          new TextMessage({
+            content: "Transfer failed with error: " + error.error,
+            role: MessageRole.Assistant,
+          })
+        );
+      }
+    },
+    render: ({ status, result }) => {
+      if (status === 'executing' || status === 'inProgress') {
+        return <div>Transfering...</div>;
+      } else if (status === 'complete') {
+        return (
+          <div>
+            <span className="px-2 py-1 rounded-lg bg-green-600 text-green-200 text-sm mr-2">Success</span> You can view the transaction details on&nbsp; 
+            <a
+              href={result.txHashLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+            explorer
+            </a>
+          </div>
+        );
+      } else if (error) {
+        return <div>Error: {error}</div>;
+      } else {
+        return <div className="text-red-500">Apologies, I encountered an error. Please try again later.</div>;
+      }
+    },
+  });
+
+  useCopilotAction({
+    name: "Staking",
+    description: "Stake your SOL and passively earn rewards over time",
+    parameters: [
+      {
+        name: "amount",
+        type: "number",
+        description: "Amount of SOL to stake",
+        required: true,
+      },
+      {
+        name: "didUserConfirm",
+        type: "boolean",
+        description: "Whether the user reviewed and confirmed the staking operation",
+        required: true,
+      },
+    ],
+    handler: async (response) => {
+      try {
+        const apiReq = {
+          amount: response.amount,
+          userId: profile?.id,
+        }
+        const apiResponse = await postJSON("/api/v1/stake/deposit", apiReq);
+        await refetchConfig();
+        return apiResponse;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.log("error", error);
+        setError(error.error);
+        appendMessage(
+          new TextMessage({
+            content: "Transfer failed with error: " + error.error,
+            role: MessageRole.Assistant,
+          })
+        );
+      }
+    },
+    render: ({ status, result }) => {
+      if (status === 'executing' || status === 'inProgress') {
+        return <div>Staking...</div>;
+      } else if (status === 'complete') {
+        return (
+          <div>
+            <span className="px-2 py-1 rounded-lg bg-green-600 text-green-200 text-sm mr-2">Success</span> You can view the transaction details on&nbsp; 
+            <a
+              href={result.txHashLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+            explorer
+            </a>
+          </div>
+        );
+      } else if (error) {
+        return <div>Error: {error}</div>;
+      } else {
+        return <div className="text-red-500">Apologies, I encountered an error. Please try again later.</div>;
+      }
     },
   });
 
@@ -357,7 +510,7 @@ Always start with the following message:
 ---
 I'm your AI assistant for your web3 wallet. I can help you with the following operations:
 
-<b>Trading:</b> Trade crypto, create smart rules around trading, transfer crypto to another wallet, and set up recurring payments.
+<b>Trading:</b> Trade crypto, create smart rules around trading, transfer crypto to another wallet, staking and set up recurring payments.
 
 <b>Information:</b> View your wallet balance, wallet address and private key, transaction history, and active rules.
 
@@ -370,6 +523,7 @@ You are now here to help the user with crypto operations. These operations are a
   - Transfer crypto to another wallet
   - Create smart rules around crypto trading
   - Create recurring payments
+  - Staking
 
 2. INFORMATION
   - Show user their wallet balance
@@ -397,7 +551,11 @@ The user can transfer crypto to another wallet. You are to analyze the tokenName
 Once you have all the paraemters, summarize the operation and ask the user for confirmation before doing anything.
 
 TRADING CRYPTO
-The user can trade crypto between two currencies. kinda like "Let's swap 1 ETH to USDC", or "Let's sell 10 USDC and buy btc" or "Let's buy 10 SOL". You are to analayze the currency that the trade is from and to, calculate the toAmount based on the fromAmount and the exchange rate, and run the tradeCrypto action with the response.
+The user can trade crypto between two currencies. kinda like "Let's swap 1 ETH to USDC", or "Let's sell 10 USDC and buy btc" or "Let's buy 10 SOL". You are to analayze the currency that the trade is from and to, calculate the toAmount based on the fromAmount and the exchange rate, and run the tradeCrypto action with the response. 
+
+When the tradeCrypto action is successfully completed, do not generate a success message. Do not say “The trade is complete” or “You can view it here.” Assume the user interface already shows the confirmation. Just wait for the next user input without saying anything.
+
+Avoid saying things like “You can view the transaction here” or repeating what the user already confirmed.
 
 EXCHANGE RATES
 The type of exchange rates is as follows:
@@ -412,6 +570,27 @@ Each number can be a floating point number. You are provided this data through t
 
 It's a record of the amount of the currency you need to spend to buy 1 USDC.
 So if the user wants to buy 10 SOL, you need to calculate the amount in USDC that the user needs to spend to buy 10 SOL. Which is 10 / (0.0058 / 1) = 172.41 USDC. or if they want to sell 10 SOL and buy btc, you need to calculate the amount in btc that the user will get. Which is 10 / (0.0058 / 0.0000097) = 0.016724137931034482 BTC.
+
+STAKING
+
+The user can stake their SOL tokens using Solana native staking.
+
+You must ask the user for the amount of SOL they want to stake.
+
+Only SOL can be staked at the moment. Other tokens are not supported.
+
+Once the user provides the amount and confirms, run the "stakeSolana" action.
+
+You only need one parameter: "amount" (the amount of SOL to stake).
+
+Do not provide or guess any reward rate or APY. If the user asks for staking rewards, APY, or rate of return, reply: "The reward rate is determined by the Solana network and may vary. I cannot provide an exact number."
+
+Always summarize the action and ask for confirmation before proceeding.
+
+You cannot perform the staking unless "didUserConfirm" is true.
+
+Example prompt completion:
+"You're about to stake 5 SOL using Solana's native staking system. Do you want to proceed?"
 
 FORMULA TO CALCULATE THE EXCHANGE RATES
 

@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Config } from "@/types/core";
+import { getJSON } from "@/utils/loaders";
 
 type SortField = "date" | "status" | "type" | "token";
 type SortOrder = "asc" | "desc";
@@ -23,12 +25,25 @@ export default function Transactions() {
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
+  const {
+    data: config,
+    error: configError,
+  } = useQuery<Config>({
+    queryKey: ["config"],
+    queryFn: () => getJSON("/api/v1/users/config"),
+  });
+
+  if( configError ){
+    console.log(configError)
+  }
+
   const { data: transactionData, isLoading } = useQuery({
     queryKey: ["transactions"],
     queryFn: () =>
       postJSON("/api/v1/transaction/all", {
-        walletAddress: "DG34bJWRt5CM2dVdi6b9mXzmMZRmBPhEm3UcUNEhNnab",
+        walletAddress: config?.wallet.address,
       }),
+    enabled: !!config,
   });
 
   const filteredAndSortedTransactions = useMemo(() => {

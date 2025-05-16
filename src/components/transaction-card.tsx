@@ -83,7 +83,6 @@ export function TransactionCard({ transaction }: TransactionCardProps) {
               {transaction.amount} {transaction.tokenName}
             </span>
             <span className="text-sm text-gray-500">
-              Duration: {transaction.duration} days
             </span>
           </div>
         );
