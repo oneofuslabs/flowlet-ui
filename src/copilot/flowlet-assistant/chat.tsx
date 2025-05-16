@@ -249,6 +249,7 @@ export const FlowletAssistant = () => {
             setTxLink(apiResponse.txHashLink);
           }
           await refetchConfig();
+          setSwapDone(true);
           return apiResponse;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
