@@ -119,7 +119,7 @@ export function StakeCard({ stake, userId }: StakeCardProps) {
                     </TooltipProvider>
 
                     <a
-                      href={`https://solscan.io/tx/${stake.txHash}`}
+                      href={`https://explorer.solana.com/tx/${stake.txHash}?cluster=devnet`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-500 hover:text-blue-700 inline-flex items-center"
