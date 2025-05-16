@@ -120,7 +120,7 @@ export const FlowletAssistant = () => {
             )}
           </div>
           <div className="mt-4">
-            These are your latest 3 transactions.{" "}
+            These are your latest transactions.{" "}
             <a
               href="/transactions"
               className="text-blue-500 underline"
